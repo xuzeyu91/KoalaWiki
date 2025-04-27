@@ -1,0 +1,21 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7F5745CD-DAE4-4C81-A675-B427B634EB17}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KoalaWiki", "src\KoalaWiki\KoalaWiki.csproj", "{7542FEE4-8528-4C9D-A26B-8C1F4A24307C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7542FEE4-8528-4C9D-A26B-8C1F4A24307C} = {7F5745CD-DAE4-4C81-A675-B427B634EB17}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7542FEE4-8528-4C9D-A26B-8C1F4A24307C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7542FEE4-8528-4C9D-A26B-8C1F4A24307C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7542FEE4-8528-4C9D-A26B-8C1F4A24307C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7542FEE4-8528-4C9D-A26B-8C1F4A24307C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
