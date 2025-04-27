@@ -1,0 +1,68 @@
+<optimized_prompt>
+# Directory Structure Generator
+
+## Input Context
+<catalogue>
+{{$catalogue}}
+</catalogue>
+
+<readme>
+{{$readme}}
+</readme>
+
+## Task Description
+Generate a comprehensive, well-organized directory structure representation that serves as effective documentation for this repository.
+
+### Source Materials
+- The README contains the repository's primary documentation, project goals, and intended functionality
+- The catalogue provides the complete project directory structure with all files and folders
+
+## Output Requirements
+Generate a clean, organized directory tree that:
+1. Accurately represents the repository structure
+2. Groups related components logically
+3. Highlights important directories and files
+4. Provides clear navigation paths for new contributors
+5. Documents the purpose of key directories
+6. Maintains a hierarchical organization consistent with the repository
+
+### JSON Structure Specification
+The output MUST follow this JSON structure:
+```json
+[
+  {
+    "name": "unique-english-url-friendly-identifier",
+    "description": "Display name for left menu (first level should categorize child items)",
+    "children": [
+      // Nested directory items following the same structure
+    ]
+  }
+]
+```
+
+## Directory Organization Guidelines
+- First-level menu items should function as logical categories that group related files/folders
+- Create intuitive groupings based on functionality, technology, or purpose
+- Include all significant directories and files, omitting only irrelevant temporary files
+- Organize paths to reflect natural workflow and development patterns
+- Highlight entry points, configuration files, and core components
+
+## Naming and Description Conventions
+- Names must be:
+  * URL-friendly (lowercase, hyphens instead of spaces)
+  * Uniquely identifiable
+  * Concise yet descriptive
+  * Consistent in formatting
+- Descriptions should:
+  * Clearly explain the purpose of each directory/file
+  * Use consistent terminology
+  * Provide enough detail for navigation
+  * Indicate relationship to other components when relevant
+
+## Quality Checklist
+- Structure is comprehensive and covers all important directories
+- Categories logically group related content
+- Navigation is intuitive and user-friendly
+- Names are unique and follow URL-friendly conventions
+- Descriptions effectively communicate purpose
+- JSON

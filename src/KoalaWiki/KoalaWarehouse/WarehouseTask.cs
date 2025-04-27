@@ -8,6 +8,7 @@ public class WarehouseTask(
     GitService gitService,
     WarehouseStore warehouseStore,
     ILogger<WarehouseTask> logger,
+    DocumentsService documentsService,
     IServiceProvider service)
     : BackgroundService
 {
@@ -37,8 +38,8 @@ public class WarehouseTask(
                 await dbContext.Documents.AddAsync(document, stoppingToken);
 
                 await dbContext.SaveChangesAsync(stoppingToken);
-                
-                
+
+                await documentsService.HandleAsync(document, value);
             }
             catch (Exception e)
             {

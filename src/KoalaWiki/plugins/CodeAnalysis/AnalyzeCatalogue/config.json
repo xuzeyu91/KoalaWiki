@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "type": "completion",
+  "description": "根据仓库描述和仓库目录结构，分析仓库的功能和结构，给出目录结构的分析结果",
+  "execution_settings": {
+    "default": {
+      "max_tokens": 1000,
+      "temperature": 0,
+      "response_format": {
+        "type": "json_object"
+      }
+    },
+    "gpt-3.5-turbo": {
+      "model_id": "gpt-3.5",
+      "max_tokens": 4000,
+      "temperature": 0.1
+    },
+    "gpt-4o": {
+      "model_id": "gpt-4o",
+      "max_tokens": 4000,
+      "temperature": 0.5,
+      "response_format": {
+        "type": "json_object"
+      }
+    }
+  },
+  "input_variables": [
+    {
+      "name": "catalogue",
+      "description": "仓库目录结构",
+      "required": true
+    },
+    {
+      "name": "readme",
+      "description": "仓库默认文档内容",
+      "required": true
+    }
+  ]
+}

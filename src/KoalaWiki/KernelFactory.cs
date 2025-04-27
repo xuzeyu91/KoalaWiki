@@ -26,6 +26,8 @@ public class KernelFactory
                     Endpoint = new Uri(embeddingEndpoint)
                 }));
 
+            kernelBuilder.Plugins.AddFromPromptDirectory(Path.Combine(AppContext.BaseDirectory, "plugins",
+                "CodeAnalysis"));
 
             var kernel = kernelBuilder.Build();
 

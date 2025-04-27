@@ -1,6 +1,7 @@
-import { Card, Tree, Typography } from 'antd';
+import { Card, Tree, Typography, Divider } from 'antd';
 import { DataNode } from 'antd/es/tree';
 import { useRouter } from 'next/navigation';
+import { FolderOutlined, FileOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 const { DirectoryTree } = Tree;
@@ -26,17 +27,48 @@ const DocDirectoryTree: React.FC<DirectoryTreeProps> = ({
     }
   };
 
+  // 递归处理树节点，添加图标
+  const processTreeData = (data: DataNode[]): DataNode[] => {
+    return data.map(node => {
+      const newNode = { ...node };
+      
+      if (newNode.children) {
+        newNode.icon = <FolderOutlined />;
+        newNode.children = processTreeData(newNode.children);
+      } else {
+        newNode.icon = <FileOutlined />;
+      }
+      
+      return newNode;
+    });
+  };
+
+  const processedTreeData = processTreeData(treeData);
+
   return (
     <Card
-      title={<Title level={5}>文档目录</Title>}
-      style={{ height: '100%' }}
-      bodyStyle={{ overflow: 'auto', maxHeight: 'calc(100vh - 120px)' }}
+      className="directory-tree-card"
+      title={
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FolderOutlined style={{ marginRight: 8, color: 'var(--ant-color-primary)' }} />
+          <Title level={5} style={{ margin: 0 }}>文档目录</Title>
+        </div>
+      }
+      bodyStyle={{ 
+        overflow: 'auto', 
+        maxHeight: 'calc(100vh - 120px)',
+        padding: '0 0 8px 0'
+      }}
+      bordered={false}
     >
+      <Divider style={{ margin: '0 0 12px 0' }} />
       <DirectoryTree
         defaultExpandAll
         onSelect={handleSelect}
-        treeData={treeData}
+        treeData={processedTreeData}
         selectedKeys={currentPath ? [currentPath] : []}
+        blockNode
+        showIcon
       />
     </Card>
   );

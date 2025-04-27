@@ -17,6 +17,7 @@ const MOCK_DOCUMENTS = {
       { key: 'purpose', href: '#目的', title: '目的' },
       { key: 'features', href: '#功能特点', title: '功能特点' },
     ],
+    lastUpdated: '2023-05-15T10:30:00Z',
   },
   'core-components': {
     title: '核心组件',
@@ -27,6 +28,7 @@ const MOCK_DOCUMENTS = {
       { key: 'doc-generator', href: '#文档生成器', title: '文档生成器' },
       { key: 'api', href: '#api接口', title: 'API接口' },
     ],
+    lastUpdated: '2023-05-16T14:20:00Z',
   },
   'data-flow': {
     title: '数据流',
@@ -37,6 +39,7 @@ const MOCK_DOCUMENTS = {
       { key: 'transformation', href: '#数据转换', title: '数据转换' },
       { key: 'output', href: '#输出生成', title: '输出生成' },
     ],
+    lastUpdated: '2023-05-17T09:15:00Z',
   },
   'main-modules': {
     title: '主要模块',
@@ -47,6 +50,7 @@ const MOCK_DOCUMENTS = {
       { key: 'ui', href: '#用户界面', title: '用户界面' },
       { key: 'analysis-service', href: '#分析服务', title: '分析服务' },
     ],
+    lastUpdated: '2023-05-18T11:45:00Z',
   },
 };
 
@@ -56,6 +60,7 @@ export default function DocumentPage() {
     title: string;
     content: string;
     toc: AnchorLinkItemProps[];
+    lastUpdated?: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -85,6 +90,7 @@ export default function DocumentPage() {
           title={document?.title || ''}
           content={document?.content || ''}
           loading={loading}
+          lastUpdated={document?.lastUpdated}
         />
       </Col>
       <Col xs={0} md={6}>

@@ -12,7 +12,7 @@ body {
 }
 
 body {
-  background-color: #f5f5f5;
+  background-color: #f0f2f5;
 }
 
 a {
@@ -24,9 +24,49 @@ a {
   height: 100%;
 }
 
+/* 页面布局样式 */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 卡片样式优化 */
+.repository-card {
+  transition: all 0.3s;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.repository-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+/* 文档页面样式 */
+.doc-container {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.doc-sidebar {
+  position: sticky;
+  top: 16px;
+}
+
 /* Markdown内容样式 */
 .markdown-content {
-  line-height: 1.6;
+  line-height: 1.8;
+  color: rgba(0, 0, 0, 0.85);
+  font-size: 16px;
 }
 
 .markdown-content h1,
@@ -35,34 +75,48 @@ a {
 .markdown-content h4,
 .markdown-content h5,
 .markdown-content h6 {
-  margin-top: 24px;
-  margin-bottom: 16px;
+  margin-top: 28px;
+  margin-bottom: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.85);
 }
 
 .markdown-content h1 {
-  font-size: 2em;
+  font-size: 28px;
   border-bottom: 1px solid #eaecef;
   padding-bottom: 0.3em;
 }
 
 .markdown-content h2 {
-  font-size: 1.5em;
+  font-size: 22px;
   border-bottom: 1px solid #eaecef;
   padding-bottom: 0.3em;
 }
 
+.markdown-content h3 {
+  font-size: 18px;
+}
+
 .markdown-content p {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .markdown-content ul,
 .markdown-content ol {
   padding-left: 2em;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .markdown-content li {
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+}
+
+.markdown-content blockquote {
+  margin: 0 0 18px;
+  padding: 0 16px;
+  color: rgba(0, 0, 0, 0.65);
+  border-left: 4px solid #eaecef;
 }
 
 .markdown-content code {
@@ -75,16 +129,67 @@ a {
 
 .markdown-content pre {
   background-color: #f6f8fa;
-  border-radius: 3px;
+  border-radius: 6px;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 85%;
   line-height: 1.45;
   overflow: auto;
   padding: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .markdown-content pre code {
   background-color: transparent;
   padding: 0;
+}
+
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 18px;
+}
+
+.markdown-content table th,
+.markdown-content table td {
+  padding: 8px 12px;
+  border: 1px solid #e8e8e8;
+}
+
+.markdown-content table th {
+  background-color: #fafafa;
+  font-weight: 500;
+}
+
+/* 主题自定义 */
+.ant-layout {
+  background: #f0f2f5;
+}
+
+.ant-layout-header {
+  background: #001529;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.ant-layout-sider {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.09);
+}
+
+.ant-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.ant-descriptions-bordered .ant-descriptions-item-label {
+  background-color: #fafafa;
+}
+
+.toc-card {
+  position: sticky;
+  top: 16px;
+}
+
+.directory-tree-card {
+  position: sticky;
+  top: 16px;
 } 

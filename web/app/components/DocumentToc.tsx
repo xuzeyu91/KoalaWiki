@@ -1,5 +1,6 @@
-import { Anchor, Card, Typography } from 'antd';
+import { Anchor, Card, Divider, Typography } from 'antd';
 import { AnchorLinkItemProps } from 'antd/es/anchor/Anchor';
+import { UnorderedListOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 
@@ -14,15 +15,27 @@ const DocumentToc: React.FC<DocumentTocProps> = ({ toc }) => {
 
   return (
     <Card
-      title={<Title level={5}>目录</Title>}
-      style={{ height: '100%', position: 'sticky', top: 16 }}
-      bodyStyle={{ maxHeight: 'calc(100vh - 120px)', overflow: 'auto' }}
+      className="toc-card"
+      title={
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <UnorderedListOutlined style={{ marginRight: 8, color: 'var(--ant-color-primary)' }} />
+          <Title level={5} style={{ margin: 0 }}>文档目录</Title>
+        </div>
+      }
+      bodyStyle={{ 
+        maxHeight: 'calc(100vh - 120px)', 
+        overflow: 'auto', 
+        padding: '0 8px' 
+      }}
+      bordered={false}
     >
+      <Divider style={{ margin: '0 0 12px 0' }} />
       <Anchor
         items={toc}
         affix={false}
         showInkInFixed
         targetOffset={80}
+        style={{ fontSize: '14px' }}
       />
     </Card>
   );
