@@ -42,6 +42,9 @@ namespace KoalaWiki.Migrations
                     b.Property<long>("LikeCount")
                         .HasColumnType("INTEGER");
 
+                    b.Property<byte>("Status")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("WarehouseId")
                         .IsRequired()
                         .HasColumnType("TEXT");

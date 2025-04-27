@@ -2,12 +2,13 @@
 using KoalaWiki.DbAccess;
 using KoalaWiki.Dto;
 using KoalaWiki.Entities;
+using KoalaWiki.KoalaWarehouse;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace KoalaWiki.Services;
 
-public class WarehouseService(KoalaDbAccess access, IMapper mapper) : FastApi
+public class WarehouseService(KoalaDbAccess access, IMapper mapper, WarehouseStore warehouseStore) : FastApi
 {
     /// <summary>
     /// 提交仓库
@@ -21,10 +22,15 @@ public class WarehouseService(KoalaDbAccess access, IMapper mapper) : FastApi
         }
 
         var entity = mapper.Map<Warehouse>(input);
+        entity.Name = string.Empty;
+        entity.Description = string.Empty;
+        entity.Version = string.Empty;
 
         entity.Id = Guid.NewGuid().ToString();
         await access.Warehouses.AddAsync(entity);
 
         await access.SaveChangesAsync();
+
+        await warehouseStore.WriteAsync(entity);
     }
 }

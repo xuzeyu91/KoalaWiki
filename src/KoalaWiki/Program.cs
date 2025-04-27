@@ -3,6 +3,7 @@ using KoalaWiki.Git;
 using KoalaWiki.KoalaWarehouse;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,8 @@ builder.Services.WithFast();
 builder.Services.AddSingleton<WarehouseStore>();
 builder.Services.AddSingleton<GitService>();
 builder.Services.AddSingleton<DocumentsService>();
+
+builder.Services.AddHostedService<WarehouseTask>();
 
 builder.Services.AddDbContext<KoalaDbAccess>(optionsBuilder =>
 {
@@ -24,6 +27,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.MapFast();

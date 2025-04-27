@@ -61,6 +61,7 @@ namespace KoalaWiki.Migrations
                     LikeCount = table.Column<long>(type: "INTEGER", nullable: false),
                     CommentCount = table.Column<long>(type: "INTEGER", nullable: false),
                     GitPath = table.Column<string>(type: "TEXT", nullable: false),
+                    Status = table.Column<byte>(type: "INTEGER", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>

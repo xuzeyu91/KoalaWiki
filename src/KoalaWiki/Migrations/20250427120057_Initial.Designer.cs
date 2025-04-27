@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KoalaWiki.Migrations
 {
     [DbContext(typeof(KoalaDbAccess))]
-    [Migration("20250427105949_Initial")]
+    [Migration("20250427120057_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -43,6 +43,9 @@ namespace KoalaWiki.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<long>("LikeCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte>("Status")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("WarehouseId")

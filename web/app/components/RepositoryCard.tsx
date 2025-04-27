@@ -1,15 +1,52 @@
-import { Card, Tag, Typography } from 'antd';
+import { Card, Tag, Typography, Space, Badge, Tooltip, Avatar } from 'antd';
 import { Repository } from '../types';
 import Link from 'next/link';
-import { FileOutlined, ClockCircleOutlined, CodeOutlined } from '@ant-design/icons';
+import { 
+  FileOutlined, 
+  ClockCircleOutlined, 
+  CodeOutlined, 
+  GithubOutlined,
+  RobotOutlined
+} from '@ant-design/icons';
 
-const { Text, Title } = Typography;
+const { Text, Title, Paragraph } = Typography;
 
 interface RepositoryCardProps {
   repository: Repository;
 }
 
 const RepositoryCard: React.FC<RepositoryCardProps> = ({ repository }) => {
+  // 获取仓库所有者和名称
+  const getRepoInfo = (address: string) => {
+    try {
+      if (address.includes('github.com')) {
+        const parts = address.replace('https://github.com/', '').split('/');
+        return {
+          owner: parts[0],
+          name: parts[1]
+        };
+      }
+    } catch (e) {
+      // 如果解析失败，返回默认值
+    }
+    return { owner: '', name: repository.name };
+  };
+
+  const repoInfo = getRepoInfo(repository.address);
+  
+  // 根据地址获取头像
+  const getAvatarUrl = () => {
+    if (repository.address.includes('github.com')) {
+      const owner = repoInfo.owner;
+      if (owner) {
+        return `https://github.com/${owner}.png`;
+      }
+    }
+    return null;
+  };
+
+  const avatarUrl = getAvatarUrl();
+
   return (
     <Link href={`/repository/${repository.id}`}>
       <Card 
@@ -17,33 +54,75 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({ repository }) => {
         className="repository-card"
         title={
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FileOutlined style={{ marginRight: 8, color: 'var(--ant-color-primary)' }} />
+            {avatarUrl ? (
+              <Avatar 
+                src={avatarUrl} 
+                size="small" 
+                style={{ marginRight: 8 }} 
+              />
+            ) : (
+              <FileOutlined style={{ 
+                marginRight: 8, 
+                color: 'var(--ant-color-primary)' 
+              }} />
+            )}
             <Title level={4} ellipsis={{ tooltip: repository.name }} style={{ margin: 0 }}>
               {repository.name}
             </Title>
           </div>
         }
-        extra={<Tag color={repository.type === 'git' ? 'blue' : 'green'}>{repository.type.toUpperCase()}</Tag>}
+        extra={
+          <Space>
+            <Tooltip title={`${repository.type.toUpperCase()} 仓库`}>
+              <Tag color={repository.type === 'git' ? 'blue' : 'green'}>
+                {repository.type === 'git' ? <GithubOutlined /> : <FileOutlined />}
+                {' '}{repository.type.toUpperCase()}
+              </Tag>
+            </Tooltip>
+          </Space>
+        }
+        actions={[
+          <Tooltip title="查看仓库详情" key="view">
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <FileOutlined /> 详情
+            </div>
+          </Tooltip>,
+          <Tooltip title="浏览文档" key="docs">
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <CodeOutlined /> 文档
+            </div>
+          </Tooltip>
+        ]}
       >
-        <div style={{ marginBottom: 16 }}>
-          <Text ellipsis={{ tooltip: repository.address }} style={{ display: 'block' }}>
+        <div style={{ marginBottom: 12 }}>
+          <Text 
+            ellipsis={{ tooltip: repository.address }} 
+            style={{ display: 'block', fontSize: '13px', color: '#666' }}
+          >
             {repository.address}
           </Text>
         </div>
         
+        <div style={{ fontSize: '13px', color: '#666', marginBottom: 16, minHeight: '40px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+          <Tooltip title={repository.prompt}>
+            {repository.prompt}
+          </Tooltip>
+        </div>
+        
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <Text type="secondary" style={{ display: 'flex', alignItems: 'center' }}>
-              <CodeOutlined style={{ marginRight: 4 }} />
+          <Tooltip title="使用的AI模型">
+            <Text type="secondary" style={{ display: 'flex', alignItems: 'center', fontSize: '12px' }}>
+              <RobotOutlined style={{ marginRight: 4 }} />
               {repository.model || '默认模型'}
             </Text>
-          </div>
-          <div>
+          </Tooltip>
+          
+          <Tooltip title={`更新时间：${new Date(repository.updatedAt).toLocaleString('zh-CN')}`}>
             <Text type="secondary" style={{ display: 'flex', alignItems: 'center', fontSize: '12px' }}>
               <ClockCircleOutlined style={{ marginRight: 4 }} />
-              {new Date(repository.updatedAt).toLocaleString('zh-CN')}
+              {new Date(repository.updatedAt).toLocaleDateString('zh-CN')}
             </Text>
-          </div>
+          </Tooltip>
         </div>
       </Card>
     </Link>
