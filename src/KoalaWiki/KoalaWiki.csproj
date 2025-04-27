@@ -35,10 +35,16 @@
       <Content Update="plugins\CodeAnalysis\AnalyzeCatalogue\config.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
+      <Content Update="plugins\CodeAnalysis\DocumentGeneration\config.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
     <ItemGroup>
       <None Update="plugins\CodeAnalysis\AnalyzeCatalogue\skprompt.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="plugins\CodeAnalysis\DocumentGeneration\skprompt.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

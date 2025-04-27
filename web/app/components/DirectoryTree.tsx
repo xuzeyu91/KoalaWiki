@@ -8,13 +8,17 @@ const { DirectoryTree } = Tree;
 
 interface DirectoryTreeProps {
   treeData: DataNode[];
-  repositoryId: string;
+  repositoryId?: string;
+  owner?: string;
+  name?: string;
   currentPath?: string;
 }
 
 const DocDirectoryTree: React.FC<DirectoryTreeProps> = ({
   treeData,
   repositoryId,
+  owner,
+  name,
   currentPath
 }) => {
   const router = useRouter();
@@ -23,7 +27,13 @@ const DocDirectoryTree: React.FC<DirectoryTreeProps> = ({
     const selectedNode = info.node;
     if (!selectedNode.children) {
       const path = selectedNode.key;
-      router.push(`/repository/${repositoryId}/doc/${path}`);
+      
+      // 根据提供的参数决定使用哪种路由格式
+      if (owner && name) {
+        router.push(`/${owner}/${name}/doc/${path}`);
+      } else if (repositoryId) {
+        router.push(`/repository/${repositoryId}/doc/${path}`);
+      }
     }
   };
 

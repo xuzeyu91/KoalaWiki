@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Button, Typography, Layout, Space, Input, Empty, Card, Row, Col, Statistic, Tooltip, Avatar } from 'antd';
+import { Button, Typography, Layout, Space, Input, Empty, Card, Row, Col, Statistic, Tooltip, Avatar, message, Pagination } from 'antd';
 import { 
   PlusOutlined, 
   SearchOutlined, 
@@ -15,6 +15,7 @@ import {
 import RepositoryForm from './components/RepositoryForm';
 import RepositoryList from './components/RepositoryList';
 import { Repository, RepositoryFormValues } from './types';
+import { getWarehouse, submitWarehouse, WarehouseListResponse } from './services/warehouseService';
 
 const { Content, Header } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -25,8 +26,12 @@ const MOCK_REPOSITORIES: Repository[] = [
   {
     id: '1',
     name: 'React',
+    description: 'A JavaScript library for building user interfaces',
     address: 'https://github.com/facebook/react',
     type: 'git',
+    branch: 'main',
+    status: 2,
+    version: '18.0.0',
     prompt: '分析React源码，重点关注核心的渲染和调度算法，并详细解释Fiber架构的实现原理和运行机制。分析组件的生命周期方法和Hooks的实现方式，对比两种编写组件的优缺点。',
     model: 'gpt-4',
     openAIKey: '',
@@ -37,8 +42,12 @@ const MOCK_REPOSITORIES: Repository[] = [
   {
     id: '2',
     name: 'Next.js',
+    description: 'The React Framework for the Web',
     address: 'https://github.com/vercel/next.js',
     type: 'git',
+    branch: 'main',
+    status: 1,
+    version: '13.0.0',
     prompt: '分析Next.js源码，重点关注其服务器端渲染(SSR)和静态站点生成(SSG)的实现机制。详细解释Next.js的路由系统和数据获取方法的工作原理。',
     model: 'gpt-4',
     openAIKey: '',
@@ -49,8 +58,12 @@ const MOCK_REPOSITORIES: Repository[] = [
   {
     id: '3',
     name: 'Ant Design',
+    description: 'An enterprise-class UI design language and React UI library',
     address: 'https://github.com/ant-design/ant-design',
     type: 'git',
+    branch: 'master',
+    status: 0,
+    version: '5.0.0',
     prompt: '分析Ant Design源码，重点关注组件系统的设计和实现，以及主题定制功能的实现原理。详细解释关键组件如Table、Form的工作机制。',
     model: 'gpt-4',
     openAIKey: '',
@@ -61,8 +74,12 @@ const MOCK_REPOSITORIES: Repository[] = [
   {
     id: '4',
     name: 'TypeScript',
+    description: 'JavaScript with syntax for types',
     address: 'https://github.com/microsoft/TypeScript',
     type: 'git',
+    branch: 'main',
+    status: 99,
+    version: '5.0.0',
     prompt: '分析TypeScript源码，重点关注类型系统的实现原理和类型检查器的工作机制。详细解释TypeScript编译器的架构设计和代码生成策略。',
     model: 'gpt-4',
     openAIKey: '',
@@ -77,34 +94,56 @@ export default function Home() {
   const [formVisible, setFormVisible] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8);
 
-  // 模拟数据加载
+  // 加载仓库数据
   useEffect(() => {
-    const timer = setTimeout(() => {
+    fetchRepositories();
+  }, [currentPage, pageSize]);
+
+  const fetchRepositories = async () => {
+    setLoading(true);
+    try {
+      const response = await getWarehouse(currentPage, pageSize);
+      if (response.success && response.data) {
+        setRepositories(response.data.items);
+        setTotal(response.data.total);
+      } else {
+        message.error('获取仓库列表失败: ' + (response.error || '未知错误'));
+        // 回退到模拟数据以防API调用失败
+        setRepositories(MOCK_REPOSITORIES);
+      }
+    } catch (error) {
+      console.error('获取仓库列表出错:', error);
+      message.error('获取仓库列表出错，请稍后重试');
+      // 回退到模拟数据以防API调用失败
       setRepositories(MOCK_REPOSITORIES);
+    } finally {
       setLoading(false);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, []);
+    }
+  };
 
-  const handleAddRepository = (values: RepositoryFormValues) => {
-    // 在实际应用中，应该调用API添加仓库
-    const newRepository: Repository = {
-      id: Date.now().toString(),
-      name: values.address.split('/').pop() || 'New Repository',
-      address: values.address,
-      type: values.type,
-      prompt: values.prompt,
-      model: values.model,
-      openAIKey: values.openAIKey,
-      openAIEndpoint: values.openAIEndpoint,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    setRepositories([...repositories, newRepository]);
+  const handleAddRepository = async (values: RepositoryFormValues) => {
+    try {
+      const response = await submitWarehouse(values);
+      if (response.success) {
+        message.success('仓库添加成功');
+        fetchRepositories(); // 重新加载仓库列表
+      } else {
+        message.error('添加仓库失败: ' + (response.error || '未知错误'));
+      }
+    } catch (error) {
+      console.error('添加仓库出错:', error);
+      message.error('添加仓库出错，请稍后重试');
+    }
     setFormVisible(false);
+  };
+
+  const handlePageChange = (page: number, size?: number) => {
+    setCurrentPage(page);
+    if (size) setPageSize(size);
   };
 
   const filteredRepositories = repositories.filter(repo => 
@@ -114,10 +153,10 @@ export default function Home() {
 
   // 计算统计数据
   const stats = {
-    totalRepositories: repositories.length,
+    totalRepositories: total || repositories.length,
     gitRepos: repositories.filter(repo => repo.type === 'git').length,
     lastUpdated: repositories.length ? new Date(
-      Math.max(...repositories.map(repo => new Date(repo.updatedAt).getTime()))
+      Math.max(...repositories.map(repo => new Date(repo.createdAt).getTime()))
     ).toLocaleDateString('zh-CN') : '-'
   };
 
@@ -248,7 +287,22 @@ export default function Home() {
               </Empty>
             </div>
           ) : (
-            <RepositoryList repositories={filteredRepositories} />
+            <>
+              <RepositoryList repositories={filteredRepositories} />
+              {!searchValue && total > pageSize && (
+                <div style={{ textAlign: 'center', marginTop: 24 }}>
+                  <Pagination 
+                    current={currentPage}
+                    pageSize={pageSize}
+                    total={total}
+                    onChange={handlePageChange}
+                    showSizeChanger
+                    showQuickJumper
+                    showTotal={(total) => `共 ${total} 个仓库`}
+                  />
+                </div>
+              )}
+            </>
           )}
           
           <RepositoryForm

@@ -13,6 +13,17 @@ builder.Services.AddSingleton<WarehouseStore>();
 builder.Services.AddSingleton<GitService>();
 builder.Services.AddSingleton<DocumentsService>();
 
+builder.Services
+    .AddCors(options =>
+    {
+        options.AddPolicy("AllowAll",
+            builder => builder
+                .SetIsOriginAllowed(_ => true)
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials());
+    });
+
 builder.Services.AddHostedService<WarehouseTask>();
 
 builder.Services.AddDbContext<KoalaDbAccess>(optionsBuilder =>
@@ -24,6 +35,7 @@ builder.Services.AddMapster();
 
 var app = builder.Build();
 
+app.UseCors("AllowAll");
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

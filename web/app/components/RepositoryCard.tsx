@@ -6,7 +6,8 @@ import {
   ClockCircleOutlined, 
   CodeOutlined, 
   GithubOutlined,
-  RobotOutlined
+  RobotOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
 
 const { Text, Title, Paragraph } = Typography;
@@ -23,9 +24,19 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({ repository }) => {
         const parts = address.replace('https://github.com/', '').split('/');
         return {
           owner: parts[0],
-          name: parts[1]
-        };
+          name: parts[1].split('.')[0]
+        }
       }
+
+      // 解析 url
+      const url = new URL(address);
+      const owner = url.pathname.split('/')[1];
+      const name = url.pathname.split('/')[2];
+      return {
+        owner: owner,
+        name: name.split('.')[0]
+      }
+      
     } catch (e) {
       // 如果解析失败，返回默认值
     }
@@ -46,9 +57,29 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({ repository }) => {
   };
 
   const avatarUrl = getAvatarUrl();
+  
+  // Handle status display
+  const getStatusTag = (status: number) => {
+    switch(status) {
+      case 0:
+        return <Tag color="orange">待处理</Tag>;
+      case 1:
+        return <Tag color="blue">处理中</Tag>;
+      case 2: 
+        return <Tag color="green">已完成</Tag>;
+      case 3:
+        return <Tag color="default">已取消</Tag>;
+      case 4:
+        return <Tag color="purple">未授权</Tag>;
+      case 99:
+        return <Tag color="red">已失败</Tag>;
+      default:
+        return <Tag color="default">未知状态</Tag>;
+    }
+  };
 
   return (
-    <Link href={`/repository/${repository.id}`}>
+    <Link href={`/${repoInfo.owner}/${repoInfo.name}`}>
       <Card 
         hoverable
         className="repository-card"
@@ -73,6 +104,7 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({ repository }) => {
         }
         extra={
           <Space>
+            {getStatusTag(repository.status)}
             <Tooltip title={`${repository.type.toUpperCase()} 仓库`}>
               <Tag color={repository.type === 'git' ? 'blue' : 'green'}>
                 {repository.type === 'git' ? <GithubOutlined /> : <FileOutlined />}
@@ -103,6 +135,19 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({ repository }) => {
           </Text>
         </div>
         
+        {repository.description && (
+          <div style={{ marginBottom: 12 }}>
+            <Text 
+              type="secondary"
+              ellipsis={{ tooltip: repository.description }}
+              style={{ fontSize: '13px', display: 'flex', alignItems: 'flex-start', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}
+            >
+              <InfoCircleOutlined style={{ marginRight: 4, marginTop: 3 }} />
+              {repository.description}
+            </Text>
+          </div>
+        )}
+        
         <div style={{ fontSize: '13px', color: '#666', marginBottom: 16, minHeight: '40px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
           <Tooltip title={repository.prompt}>
             {repository.prompt}
@@ -117,10 +162,10 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({ repository }) => {
             </Text>
           </Tooltip>
           
-          <Tooltip title={`更新时间：${new Date(repository.updatedAt).toLocaleString('zh-CN')}`}>
+          <Tooltip title={`创建时间：${new Date(repository.createdAt).toLocaleString('zh-CN')}`}>
             <Text type="secondary" style={{ display: 'flex', alignItems: 'center', fontSize: '12px' }}>
               <ClockCircleOutlined style={{ marginRight: 4 }} />
-              {new Date(repository.updatedAt).toLocaleDateString('zh-CN')}
+              {new Date(repository.createdAt).toLocaleDateString('zh-CN')}
             </Text>
           </Tooltip>
         </div>

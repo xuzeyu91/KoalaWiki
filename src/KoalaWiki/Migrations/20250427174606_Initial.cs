@@ -17,8 +17,10 @@ namespace KoalaWiki.Migrations
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Url = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
                     ParentId = table.Column<string>(type: "TEXT", nullable: true),
+                    Order = table.Column<int>(type: "INTEGER", nullable: false),
                     DucumentId = table.Column<string>(type: "TEXT", nullable: false),
                     WarehouseId = table.Column<string>(type: "TEXT", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
@@ -74,6 +76,7 @@ namespace KoalaWiki.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
+                    OrganizationName = table.Column<string>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
                     Address = table.Column<string>(type: "TEXT", nullable: false),
@@ -179,6 +182,16 @@ namespace KoalaWiki.Migrations
                 column: "WarehouseId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Warehouses_Address",
+                table: "Warehouses",
+                column: "Address");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Warehouses_Branch",
+                table: "Warehouses",
+                column: "Branch");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Warehouses_CreatedAt",
                 table: "Warehouses",
                 column: "CreatedAt");
@@ -189,9 +202,19 @@ namespace KoalaWiki.Migrations
                 column: "Name");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Warehouses_OrganizationName",
+                table: "Warehouses",
+                column: "OrganizationName");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Warehouses_Status",
                 table: "Warehouses",
                 column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Warehouses_Type",
+                table: "Warehouses",
+                column: "Type");
         }
 
         /// <inheritdoc />

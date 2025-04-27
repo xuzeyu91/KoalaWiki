@@ -3,6 +3,12 @@
 public class Warehouse : Entity<string>
 {
     /// <summary>
+    /// 组织名称
+    /// </summary>
+    /// <returns></returns>
+    public string OrganizationName { get; set; } = string.Empty;
+
+    /// <summary>
     /// 仓库名称
     /// </summary>
     public string Name { get; set; }

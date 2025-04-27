@@ -36,6 +36,14 @@ public class KoalaDbAccess(DbContextOptions<KoalaDbAccess> options) : DbContext(
             builder.HasIndex(x => x.Status);
 
             builder.HasIndex(x => x.CreatedAt);
+
+            builder.HasIndex(x => x.Address);
+
+            builder.HasIndex(x => x.Type);
+
+            builder.HasIndex(x => x.Branch);
+
+            builder.HasIndex(x => x.OrganizationName);
         }));
 
         modelBuilder.Entity<DocumentCatalog>((builder =>
@@ -98,8 +106,6 @@ public class KoalaDbAccess(DbContextOptions<KoalaDbAccess> options) : DbContext(
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
                     v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions)null));
-            
-            
         }));
 
         modelBuilder.Entity<DocumentFileItemSource>((builder =>

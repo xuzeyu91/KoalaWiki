@@ -2,6 +2,7 @@ import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { ConfigProvider, theme } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import './globals.css';
+import OpenAIProvider from './context/OpenAIContext';
 
 export default function RootLayout({
     children,
@@ -21,7 +22,9 @@ export default function RootLayout({
                 algorithm: theme.defaultAlgorithm,
               }}
             >
-              {children}
+              <OpenAIProvider>
+                {children}
+              </OpenAIProvider>
             </ConfigProvider>
           </AntdRegistry>
         </body>

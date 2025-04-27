@@ -8,7 +8,7 @@ const { Title, Text, Paragraph } = Typography;
 
 export default function DocumentDefaultPage() {
   const params = useParams();
-  const repositoryId = params.id as string;
+  const { owner, name } = params;
 
   return (
     <Card bordered={false} className="doc-container">
@@ -42,7 +42,7 @@ export default function DocumentDefaultPage() {
           />
           
           <div>
-            <Link href={`/repository/${repositoryId}`}>
+            <Link href={`/${owner}/${name}`}>
               <Button type="default" icon={<ArrowRightOutlined />}>
                 返回仓库概览
               </Button>

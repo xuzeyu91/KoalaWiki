@@ -33,4 +33,19 @@ public class WarehouseService(KoalaDbAccess access, IMapper mapper, WarehouseSto
 
         await warehouseStore.WriteAsync(entity);
     }
+
+    public async Task<PageDto<Warehouse>> GetWarehouseListAsync(int page, int pageSize)
+    {
+        var query = access.Warehouses
+            .AsNoTracking()
+            .Where(x => x.Status == WarehouseStatus.Completed);
+        
+        var total = await query.CountAsync();
+        var list = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PageDto<Warehouse>(total, list);
+    }
 }

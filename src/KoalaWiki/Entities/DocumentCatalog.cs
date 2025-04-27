@@ -6,6 +6,8 @@ public class DocumentCatalog : Entity<string>
     /// 目录名称
     /// </summary>
     public string Name { get; set; } = string.Empty;
+    
+    public string Url { get; set; } = string.Empty;
 
     /// <summary>
     /// 目录描述
@@ -17,6 +19,11 @@ public class DocumentCatalog : Entity<string>
     /// </summary>
     /// <returns></returns>
     public string? ParentId { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// 当前目录排序
+    /// </summary>
+    public int Order { get; set; } = 0;
     
     /// <summary>
     /// 文档id

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KoalaWiki.Migrations
 {
     [DbContext(typeof(KoalaDbAccess))]
-    [Migration("20250427120057_Initial")]
+    [Migration("20250427174606_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -81,7 +81,14 @@ namespace KoalaWiki.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("ParentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("WarehouseId")
@@ -225,6 +232,10 @@ namespace KoalaWiki.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("OrganizationName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Prompt")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -242,11 +253,19 @@ namespace KoalaWiki.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Address");
+
+                    b.HasIndex("Branch");
+
                     b.HasIndex("CreatedAt");
 
                     b.HasIndex("Name");
 
+                    b.HasIndex("OrganizationName");
+
                     b.HasIndex("Status");
+
+                    b.HasIndex("Type");
 
                     b.ToTable("Warehouses");
                 });
