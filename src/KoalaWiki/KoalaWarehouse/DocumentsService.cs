@@ -61,6 +61,7 @@ public class DocumentsService
         settings = new()
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+            MaxTokens = 100_000
         };
         
         kernel = KernelFactory.GetKernel(warehouse.OpenAIEndpoint,

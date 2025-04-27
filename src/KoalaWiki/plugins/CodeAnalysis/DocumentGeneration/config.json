@@ -4,7 +4,6 @@
   "description": "根据仓库描述和仓库目录结构，分析仓库的功能和结构，给出目录结构的分析结果",
   "execution_settings": {
     "default": {
-      "max_completion_tokens": 100000,
       "temperature": 0
     }
   },
