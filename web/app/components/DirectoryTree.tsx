@@ -64,12 +64,6 @@ const DocDirectoryTree: React.FC<DirectoryTreeProps> = ({
           <Title level={5} style={{ margin: 0 }}>文档目录</Title>
         </div>
       }
-      bodyStyle={{ 
-        overflow: 'auto', 
-        maxHeight: 'calc(100vh - 120px)',
-        padding: '0 0 8px 0'
-      }}
-      bordered={false}
     >
       <Divider style={{ margin: '0 0 12px 0' }} />
       <DirectoryTree

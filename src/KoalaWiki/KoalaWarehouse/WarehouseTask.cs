@@ -33,13 +33,13 @@ public class WarehouseTask(
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            var value = await warehouseStore.ReadAsync(stoppingToken);
+            var scope = service.CreateAsyncScope();
+
+            var dbContext = scope.ServiceProvider.GetService<KoalaDbAccess>();
+
             try
             {
-                var value = await warehouseStore.ReadAsync(stoppingToken);
-                var scope = service.CreateAsyncScope();
-
-                var dbContext = scope.ServiceProvider.GetService<KoalaDbAccess>();
-
                 // 先拉取仓库
                 var (localPath, name, organization) = gitService.PullRepository(value.Address);
 
@@ -56,6 +56,9 @@ public class WarehouseTask(
                     Id = Guid.NewGuid().ToString("N")
                 };
 
+                await dbContext.Documents.Where(x=>x.WarehouseId == value.Id)
+                    .ExecuteDeleteAsync(stoppingToken);
+                
                 await dbContext.Documents.AddAsync(document, stoppingToken);
 
                 await dbContext.SaveChangesAsync(stoppingToken);
@@ -74,6 +77,13 @@ public class WarehouseTask(
             catch (Exception e)
             {
                 logger.LogError("发生错误：{e}", e);
+                
+                await dbContext.Warehouses.Where(x => x.Id == value.Id)
+                    .ExecuteUpdateAsync(x => x.SetProperty(a => a.Status, WarehouseStatus.Failed), stoppingToken);
+                
+                // 删除其他的
+                await dbContext.Documents.Where(x => x.WarehouseId == value.Id)
+                    .ExecuteDeleteAsync(cancellationToken: stoppingToken);
             }
         }
     }

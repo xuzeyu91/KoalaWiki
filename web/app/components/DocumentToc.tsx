@@ -22,12 +22,6 @@ const DocumentToc: React.FC<DocumentTocProps> = ({ toc }) => {
           <Title level={5} style={{ margin: 0 }}>文档目录</Title>
         </div>
       }
-      bodyStyle={{ 
-        maxHeight: 'calc(100vh - 120px)', 
-        overflow: 'auto', 
-        padding: '0 8px' 
-      }}
-      bordered={false}
     >
       <Divider style={{ margin: '0 0 12px 0' }} />
       <Anchor

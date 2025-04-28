@@ -1,8 +1,12 @@
 ﻿using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using KoalaWiki.DbAccess;
 using KoalaWiki.Entities;
+using KoalaWiki.Entities.DocumentFile;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace KoalaWiki.KoalaWarehouse;
@@ -22,6 +26,7 @@ public class DocumentsService
             warehouse.OpenAIKey,
             warehouse.Model);
 
+
         var plugin = kernel.Plugins["CodeAnalysis"]["AnalyzeCatalogue"];
 
         OpenAIPromptExecutionSettings settings = new()
@@ -35,14 +40,30 @@ public class DocumentsService
 
         foreach (var info in pathInfos)
         {
-            catalogue.Append($"文件名：{info.Name}，路径：{info.Path}，类型：{info.Type}\n");
+            catalogue.Append($"文件绝对路径：{info.Path}\n");
         }
+
+
+        var overview = await GenerateProjectOverview(KernelFactory.GetKernel(warehouse.OpenAIEndpoint,
+            warehouse.OpenAIKey, warehouse.Model, false), catalogue.ToString(), path);
+
+        await dbContext.DocumentOverviews.Where(x => x.DocumentId == document.Id)
+            .ExecuteDeleteAsync();
+
+        await dbContext.DocumentOverviews.AddAsync(new DocumentOverview()
+        {
+            Content = overview,
+            Title = "",
+            DocumentId = document.Id,
+            Id = Guid.NewGuid().ToString("N")
+        });
+
 
         var str = new StringBuilder();
 
         await foreach (var item in kernel.InvokeStreamingAsync(plugin, new KernelArguments(settings)
                        {
-                           ["catalogue"] = catalogue,
+                           ["catalogue"] = catalogue.ToString(),
                            ["readme"] = await ReadMeFile(path)
                        }))
         {
@@ -57,37 +78,132 @@ public class DocumentsService
 
         documents.ForEach(x => x.Id = Guid.NewGuid().ToString("N"));
 
-        var documentGeneration = kernel.Plugins["CodeAnalysis"]["DocumentGeneration"];
-        settings = new()
-        {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-            MaxTokens = 100_000
-        };
-        
         kernel = KernelFactory.GetKernel(warehouse.OpenAIEndpoint,
-            warehouse.OpenAIKey,
-            "o4-mini");
-        
+            warehouse.OpenAIKey, "o4-mini");
+
+        var documentFileItems = new List<DocumentFileItem>();
+
         // 开始根据目录结构创建文档
         foreach (var item in documents)
         {
-            var sr = new StringBuilder();
+            var file = await ProcessCatalogueItems(item, kernel, catalogue.ToString(), await ReadMeFile(path));
 
-            await foreach (var sk in kernel.InvokeStreamingAsync(documentGeneration, new KernelArguments(settings)
-                           {
-                               ["catalogue"] =catalogue,
-                               ["readme"] = await ReadMeFile(path),
-                               ["title"] = item.Name
-                           }))
-            {
-                sr.Append(sk);
-            }
+            documentFileItems.Add(file);
         }
 
         // 将解析的目录结构保存到数据库
         await dbContext.DocumentCatalogs.AddRangeAsync(documents);
 
+
+        await dbContext.DocumentFileItems.AddRangeAsync(documentFileItems);
+
         await dbContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// 生成项目概述
+    /// </summary>
+    /// <returns></returns>
+    private async Task<string> GenerateProjectOverview(Kernel kernel, string catalog,
+        string readmePath)
+    {
+        var sr = new StringBuilder();
+
+        var settings = new OpenAIPromptExecutionSettings()
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+        };
+
+        var chat = kernel.GetRequiredService<IChatCompletionService>();
+        var history = new ChatHistory();
+
+        history.AddUserMessage(Prompt.Overview.Replace("{{$catalogue}}", catalog)
+            .Replace("{{$readme}}", await ReadMeFile(readmePath)));
+
+        await foreach (var item in chat.GetStreamingChatMessageContentsAsync(history, settings, kernel))
+        {
+            if (!string.IsNullOrEmpty(item.Content))
+            {
+                sr.Append(item.Content);
+            }
+        }
+
+        // 使用正则表达式将<blog></blog>中的内容提取
+        var regex = new Regex(@"<blog>(.*?)</blog>", RegexOptions.Singleline);
+
+        var match = regex.Match(sr.ToString());
+
+        if (match.Success)
+        {
+            // 提取到的内容
+            var extractedContent = match.Groups[1].Value;
+            sr.Clear();
+            sr.Append(extractedContent);
+        }
+
+        return sr.ToString();
+    }
+
+    /// <summary>
+    /// 处理每一个标题产生文件内容
+    /// </summary>
+    private async Task<DocumentFileItem> ProcessCatalogueItems(DocumentCatalog catalog, Kernel kernel, string catalogue,
+        string readmePath)
+    {
+        var chat = kernel.Services.GetService<IChatCompletionService>();
+
+        var history = new ChatHistory();
+
+        history.AddUserMessage(Prompt.DefaultPrompt.Replace("{{$catalogue}}", catalogue)
+            .Replace("{{$readme}}", await ReadMeFile(readmePath))
+            .Replace("{{$title}}", catalog.Name));
+
+
+        var sr = new StringBuilder();
+
+        await foreach (var i in chat.GetStreamingChatMessageContentsAsync(history, new OpenAIPromptExecutionSettings()
+                       {
+                           ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+                           MaxTokens = 100_000,
+                       }, kernel))
+        {
+            if (!string.IsNullOrEmpty(i.Content))
+            {
+                sr.Append(i.Content);
+            }
+        }
+
+        // 使用正则表达式将<blog></blog>中的内容提取
+        var regex = new Regex(@"<blog>(.*?)</blog>", RegexOptions.Singleline);
+
+        var match = regex.Match(sr.ToString());
+
+        if (match.Success)
+        {
+            // 提取到的内容
+            var extractedContent = match.Groups[1].Value;
+            sr.Clear();
+            sr.Append(extractedContent);
+        }
+
+        var fileItem = new DocumentFileItem()
+        {
+            Content = sr.ToString(),
+            DocumentCatalogId = catalog.Id,
+            Description = string.Empty,
+            Extra = new Dictionary<string, string>(),
+            Metadata = new Dictionary<string, string>(),
+            Source = new List<DocumentFileItemSource>(),
+            CommentCount = 0,
+            RequestToken = 0,
+            CreatedAt = DateTime.Now,
+            Id = Guid.NewGuid().ToString("N"),
+            ResponseToken = 0,
+            Size = 0,
+            Title = catalog.Name,
+        };
+
+        return fileItem;
     }
 
     private void ProcessCatalogueItems(List<DocumentResultCatalogueItem> items, string? parentId, Warehouse warehouse,
@@ -167,7 +283,7 @@ public class DocumentsService
             {
                 continue;
             }
-            
+
             // 递归扫描子目录
             ScanDirectory(directory, infoList);
         }

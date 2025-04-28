@@ -148,16 +148,6 @@ const RepositoryForm: React.FC<RepositoryFormProps> = ({
         <Form.Item
           name="openAIKey"
           label="OpenAI 密钥"
-          extra={
-            <Button 
-              type="link" 
-              style={{ padding: 0, height: 'auto' }}
-              onClick={handleApiConfigChange}
-              
-            >
-              获取可用模型
-            </Button>
-          }
         >
           <Input.Password placeholder="请输入 OpenAI 密钥" />
         </Form.Item>
@@ -167,34 +157,31 @@ const RepositoryForm: React.FC<RepositoryFormProps> = ({
           label="使用模型"
           rules={[{ required: true, message: '请选择使用的模型' }]}
         >
-          {modelsFetching ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Spin size="small" />
-              <span>正在获取模型列表...</span>
-            </div>
-          ) : (
-            <Space.Compact style={{ width: '100%' }}>
-              <Select
-                placeholder={models.length > 0 ? "请选择模型" : "请先配置 API 密钥和端点并获取模型列表"}
-                disabled={models.length === 0}
-                showSearch
-                optionFilterProp="children"
-                style={{ width: 'calc(100% - 32px)' }}
-              >
-                {models.map(model => (
-                  <Select.Option key={model} value={model}>
-                    {model}
-                  </Select.Option>
-                ))}
-              </Select>
-              <Button 
-                icon={<ReloadOutlined />} 
-                onClick={handleApiConfigChange}
-                disabled={!form.getFieldValue('openAIEndpoint') || !form.getFieldValue('openAIKey')}
-                loading={modelsFetching}
-              />
-            </Space.Compact>
-          )}
+          <Select
+          options={[
+            {
+              label: 'gpt-4.1',
+              value: 'gpt-4.1',
+            },
+            {
+              label: 'gpt-4o',
+              value: 'gpt-4o',
+            },
+            {
+              label: 'gpt-4o-mini',
+              value: 'gpt-4o-mini',
+            },
+            {
+              label: 'gpt-4.1-mini',
+              value: 'gpt-4.1-mini',
+            },
+            {
+              label: 'o4-mini',
+              value: 'o4-mini',
+            }
+          ]}
+          >
+          </Select>
         </Form.Item>
       </Form>
     </Modal>

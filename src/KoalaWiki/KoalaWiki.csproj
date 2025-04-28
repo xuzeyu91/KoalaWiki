@@ -25,6 +25,11 @@
         </PackageReference>
         <PackageReference Include="Microsoft.SemanticKernel" Version="1.47.0" />
         <PackageReference Include="Scalar.AspNetCore" Version="2.2.1" />
+        <PackageReference Include="Serilog" Version="4.2.0" />
+        <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -35,16 +40,10 @@
       <Content Update="plugins\CodeAnalysis\AnalyzeCatalogue\config.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
-      <Content Update="plugins\CodeAnalysis\DocumentGeneration\config.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
     </ItemGroup>
 
     <ItemGroup>
       <None Update="plugins\CodeAnalysis\AnalyzeCatalogue\skprompt.txt">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="plugins\CodeAnalysis\DocumentGeneration\skprompt.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

@@ -1,55 +1,142 @@
 'use client';
-import { Alert, Card, Skeleton, Typography, Empty, Button, Space } from 'antd';
+import { useState, useEffect, useMemo } from 'react';
+import { Row, Col, ConfigProvider, theme } from 'antd';
 import { useParams } from 'next/navigation';
-import { BookOutlined, InfoCircleOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import Link from 'next/link';
+import 'katex/dist/katex.min.css';
 
-const { Title, Text, Paragraph } = Typography;
+// 导入封装好的组件
+import {
+  DocumentHeader,
+  DocumentContent,
+  DocumentSidebar,
+  MobileDocumentDrawer,
+  LoadingErrorState,
+  DocumentStyles,
+  extractHeadings,
+  createAnchorItems,
+  initializeMermaid
+} from '../../../components/document';
 
-export default function DocumentDefaultPage() {
+// 导入文档服务
+import { documentById } from '../../../services/warehouseService';
+
+const { useToken } = theme;
+
+export default function DocumentPage() {
   const params = useParams();
-  const { owner, name } = params;
+  const { owner, name, path } = params;
+  const [document, setDocument] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [headings, setHeadings] = useState<{key: string, title: string, level: number, id: string}[]>([]);
+  const [diagramsRendered, setDiagramsRendered] = useState(false);
+  const { token } = useToken();
+  
+  // 文档最后更新时间
+  const lastUpdated = useMemo(() => {
+    if (document?.updatedAt) {
+      return new Date(document.updatedAt).toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+    return '最近更新';
+  }, [document]);
+  
+  // 生成目录锚点项
+  const anchorItems = useMemo(() => {
+    return createAnchorItems(headings);
+  }, [headings]);
 
+  // 初始化mermaid配置
+  useEffect(() => {
+    const isDarkMode = token.colorBgBase.startsWith('#11'); // 简单判断当前是否为暗黑模式
+    initializeMermaid(isDarkMode);
+  }, [token.colorBgBase]);
+
+  // 获取文档内容
+  useEffect(() => {
+    const fetchDocument = async () => {
+      try {
+        setLoading(true);
+        const response = await documentById(owner as string, name as string, path as string);
+        if (response.isSuccess && response.data) {
+          setDocument(response.data);
+          // 提取标题作为目录
+          const extractedHeadings = extractHeadings(response.data.content);
+          setHeadings(extractedHeadings);
+        } else {
+          setError(response.message || '无法获取文档内容，请检查文档路径是否正确');
+        }
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : '网络异常，请稍后重试';
+        setError(`获取文档时发生错误：${errorMsg}`);
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDocument();
+  }, [owner, name, path]);
+
+  // 渲染页面主体
   return (
-    <Card bordered={false} className="doc-container">
-      <div style={{ textAlign: 'center', padding: '40px 0' }}>
-        <Space direction="vertical" size={24} style={{ width: '100%' }}>
-          <BookOutlined style={{ fontSize: 64, color: 'var(--ant-color-primary)' }} />
-          
-          <Title level={2}>文档浏览</Title>
-          
-          <Paragraph style={{ maxWidth: 600, margin: '0 auto' }}>
-            这里展示了通过AI对仓库代码的分析结果，提供代码结构、核心功能和实现原理的深度解析。
-          </Paragraph>
-          
-          <Alert
-            message="选择文档开始浏览"
-            description={
-              <div style={{ textAlign: 'left' }}>
-                <Paragraph>
-                  <InfoCircleOutlined style={{ marginRight: 8 }} />
-                  请从左侧目录选择一个文档进行查看，目录结构反映了代码的组织方式。
-                </Paragraph>
-                <Paragraph>
-                  <InfoCircleOutlined style={{ marginRight: 8 }} />
-                  每个文档都由AI根据代码自动生成，并提供了代码的关键洞察。
-                </Paragraph>
-              </div>
-            }
-            type="info"
-            showIcon={false}
-            style={{ maxWidth: 600, margin: '0 auto', textAlign: 'left' }}
-          />
-          
-          <div>
-            <Link href={`/${owner}/${name}`}>
-              <Button type="default" icon={<ArrowRightOutlined />}>
-                返回仓库概览
-              </Button>
-            </Link>
-          </div>
-        </Space>
-      </div>
-    </Card>
+    <div className="doc-page-container" style={{ backgroundColor: token.colorBgLayout, minHeight: '100vh' }}>
+      <Row 
+        gutter={[0, 16]} 
+        style={{ 
+          padding: { xs: '8px', sm: '16px', md: '24px' }[token.screenSM],
+          maxWidth: '1600px',
+          margin: '0 auto'
+        }}
+      >
+        {loading || error ? (
+          <Col span={24}>
+            <LoadingErrorState
+              loading={loading}
+              error={error}
+              owner={owner as string}
+              name={name as string}
+              token={token}
+            />
+          </Col>
+        ) : (
+          <>
+            {/* 主要内容区 */}
+            <Col xs={24} sm={24} md={18} lg={18} xl={18}>
+              <DocumentContent
+                document={document}
+                owner={owner as string}
+                name={name as string}
+                token={token}
+              />
+            </Col>
+            
+            {/* 侧边栏：目录和更多信息 */}
+            <Col xs={0} sm={0} md={6} lg={6} xl={6}>
+              <DocumentSidebar
+                anchorItems={anchorItems}
+                token={token}
+                document={document}
+              />
+            </Col>
+          </>
+        )}
+      </Row>
+
+      {/* 移动端抽屉和悬浮按钮 - 仅在有文档内容时显示 */}
+      {!loading && !error && (
+        <MobileDocumentDrawer
+          anchorItems={anchorItems}
+          token={token}
+        />
+      )}
+      
+      {/* 全局样式 */}
+      <DocumentStyles token={token} />
+    </div>
   );
-} 
+}

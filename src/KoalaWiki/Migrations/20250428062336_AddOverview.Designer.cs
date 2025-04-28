@@ -3,6 +3,7 @@ using System;
 using KoalaWiki.DbAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KoalaWiki.Migrations
 {
     [DbContext(typeof(KoalaDbAccess))]
-    partial class KoalaDbAccessModelSnapshot : ModelSnapshot
+    [Migration("20250428062336_AddOverview")]
+    partial class AddOverview
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");

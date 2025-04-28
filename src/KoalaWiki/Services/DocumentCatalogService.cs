@@ -35,6 +35,43 @@ public class DocumentCatalogService(KoalaDbAccess dbAccess) : FastApi
         return BuildDocumentTree(document);
     }
 
+    /// <summary>
+    /// 根据目录id获取文件
+    /// </summary>
+    /// <returns></returns>
+    public async Task GetDocumentByIdAsync(HttpContext httpContext, string owner, string name, string path)
+    {
+        // 先根据仓库名称和组织名称找到仓库
+        var query = await dbAccess.Warehouses
+            .AsNoTracking()
+            .Where(x => x.Name == name && x.OrganizationName == owner)
+            .FirstOrDefaultAsync();
+
+        // 找到catalog
+        var id = await dbAccess.DocumentCatalogs
+            .AsNoTracking()
+            .Where(x => x.WarehouseId == query.Id && x.Url == path)
+            .Select(x => x.Id)
+            .FirstOrDefaultAsync();
+
+        var item = await dbAccess.DocumentFileItems
+            .AsNoTracking()
+            .Where(x => x.DocumentCatalogId == id)
+            .FirstOrDefaultAsync();
+
+        if (item == null)
+        {
+            throw new NotFoundException("文件不存在");
+        }
+
+        //md
+        await httpContext.Response.WriteAsJsonAsync(new
+        {
+            content = item.Content,
+            title = item.Title,
+        });
+    }
+
 
     /// <summary>
     /// 递归构建文档目录树形结构

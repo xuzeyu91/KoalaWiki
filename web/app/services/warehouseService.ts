@@ -50,3 +50,16 @@ export async function documentCatalog(organizationName:string,name:string):Promi
     method: 'GET',
   });
 }
+
+export async function documentById(owner:string, name:string, path:string):Promise<any>{
+  return fetchApi<any>(API_URL + '/DocumentCatalog/DocumentById?owner=' + owner + '&name=' + name + '&path=' + path, {
+    method: 'GET',
+  });
+}
+
+// /api/Warehouse/WarehouseOverview
+export async function  getWarehouseOverview(owner:string, name:string){
+  return fetchApi<any>(API_URL + '/Warehouse/WarehouseOverview?owner=' + owner + '&name=' + name , {
+    method: 'GET',
+  });
+}

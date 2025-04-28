@@ -18,76 +18,8 @@ import { Repository, RepositoryFormValues } from './types';
 import { getWarehouse, submitWarehouse, WarehouseListResponse } from './services/warehouseService';
 
 const { Content, Header } = Layout;
-const { Title, Text, Paragraph } = Typography;
+const { Title,  Paragraph } = Typography;
 const { Search } = Input;
-
-// 模拟数据，实际应用中应从API获取
-const MOCK_REPOSITORIES: Repository[] = [
-  {
-    id: '1',
-    name: 'React',
-    description: 'A JavaScript library for building user interfaces',
-    address: 'https://github.com/facebook/react',
-    type: 'git',
-    branch: 'main',
-    status: 2,
-    version: '18.0.0',
-    prompt: '分析React源码，重点关注核心的渲染和调度算法，并详细解释Fiber架构的实现原理和运行机制。分析组件的生命周期方法和Hooks的实现方式，对比两种编写组件的优缺点。',
-    model: 'gpt-4',
-    openAIKey: '',
-    openAIEndpoint: '',
-    createdAt: '2023-01-01T00:00:00Z',
-    updatedAt: '2023-01-01T00:00:00Z',
-  },
-  {
-    id: '2',
-    name: 'Next.js',
-    description: 'The React Framework for the Web',
-    address: 'https://github.com/vercel/next.js',
-    type: 'git',
-    branch: 'main',
-    status: 1,
-    version: '13.0.0',
-    prompt: '分析Next.js源码，重点关注其服务器端渲染(SSR)和静态站点生成(SSG)的实现机制。详细解释Next.js的路由系统和数据获取方法的工作原理。',
-    model: 'gpt-4',
-    openAIKey: '',
-    openAIEndpoint: '',
-    createdAt: '2023-01-02T00:00:00Z',
-    updatedAt: '2023-01-02T00:00:00Z',
-  },
-  {
-    id: '3',
-    name: 'Ant Design',
-    description: 'An enterprise-class UI design language and React UI library',
-    address: 'https://github.com/ant-design/ant-design',
-    type: 'git',
-    branch: 'master',
-    status: 0,
-    version: '5.0.0',
-    prompt: '分析Ant Design源码，重点关注组件系统的设计和实现，以及主题定制功能的实现原理。详细解释关键组件如Table、Form的工作机制。',
-    model: 'gpt-4',
-    openAIKey: '',
-    openAIEndpoint: '',
-    createdAt: '2023-01-03T00:00:00Z',
-    updatedAt: '2023-01-03T00:00:00Z',
-  },
-  {
-    id: '4',
-    name: 'TypeScript',
-    description: 'JavaScript with syntax for types',
-    address: 'https://github.com/microsoft/TypeScript',
-    type: 'git',
-    branch: 'main',
-    status: 99,
-    version: '5.0.0',
-    prompt: '分析TypeScript源码，重点关注类型系统的实现原理和类型检查器的工作机制。详细解释TypeScript编译器的架构设计和代码生成策略。',
-    model: 'gpt-4',
-    openAIKey: '',
-    openAIEndpoint: '',
-    createdAt: '2023-01-04T00:00:00Z',
-    updatedAt: '2023-01-04T00:00:00Z',
-  },
-];
 
 export default function Home() {
   const [repositories, setRepositories] = useState<Repository[]>([]);
@@ -110,16 +42,10 @@ export default function Home() {
       if (response.success && response.data) {
         setRepositories(response.data.items);
         setTotal(response.data.total);
-      } else {
-        message.error('获取仓库列表失败: ' + (response.error || '未知错误'));
-        // 回退到模拟数据以防API调用失败
-        setRepositories(MOCK_REPOSITORIES);
       }
     } catch (error) {
       console.error('获取仓库列表出错:', error);
       message.error('获取仓库列表出错，请稍后重试');
-      // 回退到模拟数据以防API调用失败
-      setRepositories(MOCK_REPOSITORIES);
     } finally {
       setLoading(false);
     }
@@ -175,7 +101,7 @@ export default function Home() {
                 type="text" 
                 icon={<GithubOutlined />} 
                 style={{ color: 'white' }} 
-                href="https://github.com/yourusername/koalawiki" 
+                href="https://github.com/AIDotNet/koalawiki" 
                 target="_blank"
               />
             </Tooltip>
@@ -194,7 +120,7 @@ export default function Home() {
         <div className="page-container">
           <Row gutter={[24, 24]}>
             <Col span={24}>
-              <Card bordered={false} style={{ borderRadius: 12, marginBottom: 24 }}>
+              <Card  style={{ borderRadius: 12, marginBottom: 24 }}>
                 <Row gutter={24} align="middle">
                   <Col xs={24} md={16}>
                     <div style={{ paddingRight: 24 }}>
@@ -269,7 +195,7 @@ export default function Home() {
             <Row gutter={[16, 16]} className="repository-grid">
               {[1, 2, 3, 4].map(i => (
                 <Col xs={24} sm={12} md={8} lg={6} key={i}>
-                  <Card loading bordered={false} className="repository-card" />
+                  <Card loading className="repository-card" />
                 </Col>
               ))}
             </Row>

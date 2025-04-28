@@ -17,6 +17,8 @@ public class KoalaDbAccess(DbContextOptions<KoalaDbAccess> options) : DbContext(
 
     public DbSet<DocumentFileItemSource> DocumentFileItemSources { get; set; }
 
+    public DbSet<DocumentOverview> DocumentOverviews { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -122,5 +124,16 @@ public class KoalaDbAccess(DbContextOptions<KoalaDbAccess> options) : DbContext(
 
             builder.HasIndex(x => x.DocumentFileItemId);
         }));
+
+        modelBuilder.Entity<DocumentOverview>(options =>
+        {
+            options.HasKey(x => x.Id);
+
+            options.Property(x => x.Title).IsRequired();
+
+            options.HasIndex(x => x.DocumentId);
+
+            options.HasIndex(x => x.Title);
+        });
     }
 }

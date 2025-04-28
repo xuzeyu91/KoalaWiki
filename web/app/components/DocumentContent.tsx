@@ -20,8 +20,6 @@ const DocumentContent: React.FC<DocumentContentProps> = ({
   return (
     <Card 
       className="doc-container"
-      bordered={false}
-      bodyStyle={{ padding: '16px 24px' }}
     >
       {loading ? (
         <Skeleton active paragraph={{ rows: 15 }} />

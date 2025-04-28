@@ -37,13 +37,10 @@ import {
   SyncOutlined,
   CloseCircleOutlined
 } from '@ant-design/icons';
+import { getWarehouseOverview } from '../../services';
 
 const { Title, Text, Paragraph } = Typography;
 const { useToken } = theme;
-
-// 模拟数据，实际应用中应从API获取
-const MOCK_REPOSITORIES: Repository[] = [
-];
 
 // 获取仓库所有者和名称
 const getRepoInfo = (address: string) => {
@@ -85,19 +82,25 @@ export default function RepositoryPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const { token } = useToken();
+  const [document,setDocument] = useState<any>({
+    content:'',
+    title:''
+  })
   
   useEffect(() => {
     // 模拟API调用
-    const fetchRepository = () => {
+    const fetchRepository = async () => {
       setLoading(true);
       try {
         // 使用 owner 和 name 参数来查找仓库
-        const repo = MOCK_REPOSITORIES.find(r => {
-          const repoInfo = getRepoInfo(r.address);
-          return repoInfo.owner === params.owner && repoInfo.name === params.name;
-        });
-        
-        setRepository(repo || null);
+        // const repo = MOCK_REPOSITORIES.find(r => {
+        //   const repoInfo = getRepoInfo(r.address);
+        //   return repoInfo.owner === params.owner && repoInfo.name === params.name;
+        // });
+        const value = await getWarehouseOverview(params.owner.toString(),params.name.toString())
+        console.log(value);
+        setDocument(value.data);
+        // setRepository(repo || null);
       } finally {
         setLoading(false);
       }
@@ -105,6 +108,7 @@ export default function RepositoryPage() {
     
     fetchRepository();
   }, [params.owner, params.name]);
+
 
   // 仓库状态配置
   const statusConfig = {
@@ -172,7 +176,6 @@ export default function RepositoryPage() {
     return (
       <div className="page-container" style={{ padding: '24px 16px' }}>
         <Card
-          bordered={false}
           className="error-container"
           styles={{
             body: {
@@ -232,7 +235,6 @@ export default function RepositoryPage() {
                   <span>仓库说明</span>
                 </Space>
               }
-              bordered={false}
               style={{ height: '100%' }}
             >
               {repository.description ? (
@@ -283,7 +285,6 @@ export default function RepositoryPage() {
                     <span>AI 模型</span>
                   </Space>
                 }
-                bordered={false}
               >
                 <Statistic
                   value={repository.model || '默认模型'}
@@ -298,7 +299,6 @@ export default function RepositoryPage() {
                     <span>处理状态</span>
                   </Space>
                 }
-                bordered={false}
               >
                 <div style={{ textAlign: 'center' }}>
                   <Progress 
@@ -325,7 +325,6 @@ export default function RepositoryPage() {
                   <span>分析提示词</span>
                 </Space>
               }
-              bordered={false}
             >
               <div style={{ 
                 background: token.colorFillTertiary,
@@ -351,7 +350,7 @@ export default function RepositoryPage() {
         </Space>
       ),
       children: (
-        <Card bordered={false}>
+        <Card >
           <Row gutter={[24, 24]}>
             <Col span={24}>
               <Title level={5}>API 配置</Title>
