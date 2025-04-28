@@ -110,39 +110,13 @@ const RepositoryForm: React.FC<RepositoryFormProps> = ({
         >
           <Input placeholder="请输入仓库地址" />
         </Form.Item>
-
-        <Form.Item
-          name="type"
-          label="仓库类型"
-          rules={[{ required: true, message: '请选择仓库类型' }]}
-        >
-          <Select>
-            <Select.Option value="git">Git</Select.Option>
-            <Select.Option value="svn">SVN</Select.Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="branch"
-          label="仓库分支"
-          rules={[{ required: true, message: '请输入仓库分支' }]}
-        >
-          <Input placeholder="请输入仓库分支，例如 main 或 master" />
-        </Form.Item>
-
-        <Form.Item
-          name="prompt"
-          label="构建提示词"
-          rules={[{ required: true, message: '请输入构建提示词' }]}
-        >
-          <Input.TextArea rows={4} placeholder="请输入构建提示词" />
-        </Form.Item>
-        
         <Form.Item
           name="openAIEndpoint"
           label="OpenAI 端点"
         >
-          <Input placeholder="请输入 OpenAI 端点" />
+          <Input
+          disabled
+          placeholder="请输入 OpenAI 端点" />
         </Form.Item>
 
         <Form.Item
@@ -178,7 +152,11 @@ const RepositoryForm: React.FC<RepositoryFormProps> = ({
             {
               label: 'o4-mini',
               value: 'o4-mini',
-            }
+            },
+            {
+              label:'DeepSeek-V3',
+              value:'DeepSeek-V3',
+            },
           ]}
           >
           </Select>

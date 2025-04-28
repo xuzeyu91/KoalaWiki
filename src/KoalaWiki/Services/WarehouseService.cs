@@ -12,27 +12,69 @@ namespace KoalaWiki.Services;
 public class WarehouseService(KoalaDbAccess access, IMapper mapper, WarehouseStore warehouseStore) : FastApi
 {
     /// <summary>
+    /// 查询上次提交的仓库
+    /// </summary>
+    /// <returns></returns>
+    public async Task<object> GetLastWarehouseAsync(string address)
+    {
+        // 判断是否.git结束，如果不是需要添加
+        if (!address.EndsWith(".git"))
+        {
+            address += ".git";
+        }
+        
+        var query = await access.Warehouses
+            .AsNoTracking()
+            .Where(x => x.Address == address)
+            .FirstOrDefaultAsync();
+
+        // 如果没有找到仓库，返回空列表
+        if (query == null)
+        {
+            throw new NotFoundException("仓库不存在");
+        }
+
+        return new
+        {
+            query.Name,
+            query.Address,
+            query.Description,
+            query.Version,
+            query.Status,
+            query.Error
+        };
+    }
+
+    /// <summary>
     /// 提交仓库
     /// </summary>
     public async Task SubmitWarehouseAsync(WarehouseInput input)
     {
+        // 判断是否.git结束，如果不是需要添加
+        if (!input.Address.EndsWith(".git"))
+        {
+            input.Address += ".git";
+        }
         // 判断这个仓库是否已经添加
         if (await access.Warehouses.AnyAsync(x =>
                 x.Address == input.Address &&
-                (x.Status != WarehouseStatus.Completed || x.Status != WarehouseStatus.Pending )))
+                (x.Status != WarehouseStatus.Completed || x.Status != WarehouseStatus.Pending)))
         {
             throw new Exception("存在相同名称的渠道");
         }
-        
+
         // 删除旧的仓库
         var oldWarehouse = await access.Warehouses
             .Where(x => x.Address == input.Address)
             .ExecuteDeleteAsync();
-      
+
         var entity = mapper.Map<Warehouse>(input);
         entity.Name = string.Empty;
         entity.Description = string.Empty;
         entity.Version = string.Empty;
+        entity.Prompt = string.Empty;
+        entity.Branch = string.Empty;
+        entity.Type = "git";
 
         entity.Id = Guid.NewGuid().ToString();
         await access.Warehouses.AddAsync(entity);

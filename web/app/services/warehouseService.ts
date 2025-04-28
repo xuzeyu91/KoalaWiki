@@ -63,3 +63,13 @@ export async function  getWarehouseOverview(owner:string, name:string){
     method: 'GET',
   });
 }
+
+///api/Warehouse/LastWarehouse
+
+export async function  getLastWarehouse(address:string){
+  return fetchApi<any>(API_URL + '/Warehouse/LastWarehouse?address=' + address , {
+    method: 'GET',
+  });
+}
+
+

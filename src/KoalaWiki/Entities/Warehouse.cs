@@ -38,6 +38,11 @@ public class Warehouse : Entity<string>
     /// 仓库状态
     /// </summary>
     public WarehouseStatus Status { get; set; }
+    
+    /// <summary>
+    /// 错误信息
+    /// </summary>
+    public string Error { get; set; }
 
     /// <summary>
     /// 构建提示词

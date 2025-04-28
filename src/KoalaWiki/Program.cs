@@ -4,8 +4,16 @@ using KoalaWiki.KoalaWarehouse;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var logger = new Serilog.LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .CreateLogger();
+
+builder.Services.AddSerilog(logger);
 
 builder.Services.AddOpenApi();
 builder.Services.WithFast();

@@ -4,6 +4,8 @@ public class Prompt
 {
     public const string DefaultPrompt = 
         """
+        Always respond in 中文
+        
         You are a document expert tasked with creating comprehensive and well-structured documentation based on the provided information. Your role is to analyze the given inputs, extract relevant knowledge, and synthesize a well-structured, informative document. During the analysis, you will use the provided functions to read and analyze file contents.
         
         You will be working with the following input variables:
@@ -66,6 +68,8 @@ public class Prompt
     
     public const string Overview =
 """
+Always respond in 中文
+
 You are tasked with analyzing a software project's structure and generating a comprehensive overview. Your primary responsibility is to understand and document the project's architecture, components and relationships based on provided information.
 
 <system_parameters>
@@ -99,11 +103,26 @@ Required analysis points:
 4. Main entry points and critical module paths
 
 PHASE 3: DETAILED COMPONENT ANALYSIS
-IMPORTANT: Use ONLY the provided system functions to:
-- Read contents of identified main entry points
-- Access core module implementations
-- Examine configuration files
-- Analyze dependency specifications
+For each key file identified in PHASE 2:
+1. Read and analyze the content of main entry points
+2. Examine core module implementations
+3. Review configuration files
+4. Analyze dependency specifications
+
+IMPORTANT: For each file you identify as important from the catalogue:
+- Request its content using system functions
+- Include specific code snippets in your analysis
+- Connect file implementations to the project's overall architecture
+- Identify how components interact with each other
+
+Use this format for file analysis:
+```
+File: [filepath]
+Purpose: [brief description of file's purpose]
+Key components: [list main classes/functions/elements]
+Relationships: [how this file connects to other components]
+Code highlights: [important code snippets with explanation]
+```
 </analysis_phases>
 
 <output_requirements>
@@ -121,16 +140,16 @@ Generate a comprehensive project overview using Markdown syntax that includes:
    - Data flow diagrams (if applicable)
 
 3. Implementation Details
-   - Main entry points
-   - Core modules
-   - Configuration approach
-   - External dependencies
-   - Integration points
+   - Main entry points (with code examples)
+   - Core modules (with implementation highlights)
+   - Configuration approach (with file examples)
+   - External dependencies (with integration examples)
+   - Integration points (with code demonstrations)
 
 4. Key Features
    - Functionality overview
-   - Implementation highlights
-   - Usage examples
+   - Implementation highlights (with code examples)
+   - Usage examples (with practical code snippets)
 
 Format the final output within <blog> tags using proper Markdown hierarchy and formatting.
 </output_requirements>

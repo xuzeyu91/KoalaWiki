@@ -22,6 +22,7 @@ export interface Repository {
   openAIEndpoint: string;
   createdAt: string;
   updatedAt?: string;
+  error?:string;
 }
 
 export interface RepositoryFormValues {

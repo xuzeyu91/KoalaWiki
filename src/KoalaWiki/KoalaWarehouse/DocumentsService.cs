@@ -78,9 +78,6 @@ public class DocumentsService
 
         documents.ForEach(x => x.Id = Guid.NewGuid().ToString("N"));
 
-        kernel = KernelFactory.GetKernel(warehouse.OpenAIEndpoint,
-            warehouse.OpenAIKey, "o4-mini");
-
         var documentFileItems = new List<DocumentFileItem>();
 
         // 开始根据目录结构创建文档
@@ -164,7 +161,6 @@ public class DocumentsService
         await foreach (var i in chat.GetStreamingChatMessageContentsAsync(history, new OpenAIPromptExecutionSettings()
                        {
                            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
-                           MaxTokens = 100_000,
                        }, kernel))
         {
             if (!string.IsNullOrEmpty(i.Content))

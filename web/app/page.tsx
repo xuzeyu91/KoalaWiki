@@ -10,10 +10,12 @@ import {
   CodeOutlined,
   RobotOutlined,
   FileTextOutlined,
-  ArrowRightOutlined
+  ArrowRightOutlined,
+  HistoryOutlined
 } from '@ant-design/icons';
 import RepositoryForm from './components/RepositoryForm';
 import RepositoryList from './components/RepositoryList';
+import LastRepoModal from './components/LastRepoModal';
 import { Repository, RepositoryFormValues } from './types';
 import { getWarehouse, submitWarehouse, WarehouseListResponse } from './services/warehouseService';
 
@@ -24,6 +26,7 @@ const { Search } = Input;
 export default function Home() {
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [formVisible, setFormVisible] = useState(false);
+  const [lastRepoModalVisible, setLastRepoModalVisible] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -96,6 +99,14 @@ export default function Home() {
           </div>
           
           <Space>
+            <Tooltip title="查询上次提交仓库">
+              <Button 
+                type="text" 
+                icon={<HistoryOutlined />} 
+                style={{ color: 'white' }} 
+                onClick={() => setLastRepoModalVisible(true)}
+              />
+            </Tooltip>
             <Tooltip title="源码地址">
               <Button 
                 type="text" 
@@ -235,6 +246,11 @@ export default function Home() {
             open={formVisible}
             onCancel={() => setFormVisible(false)}
             onSubmit={handleAddRepository}
+          />
+          
+          <LastRepoModal
+            open={lastRepoModalVisible}
+            onCancel={() => setLastRepoModalVisible(false)}
           />
         </div>
       </Content>

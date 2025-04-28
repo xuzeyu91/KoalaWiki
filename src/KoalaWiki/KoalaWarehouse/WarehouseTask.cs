@@ -56,9 +56,9 @@ public class WarehouseTask(
                     Id = Guid.NewGuid().ToString("N")
                 };
 
-                await dbContext.Documents.Where(x=>x.WarehouseId == value.Id)
+                await dbContext.Documents.Where(x => x.WarehouseId == value.Id)
                     .ExecuteDeleteAsync(stoppingToken);
-                
+
                 await dbContext.Documents.AddAsync(document, stoppingToken);
 
                 await dbContext.SaveChangesAsync(stoppingToken);
@@ -77,10 +77,11 @@ public class WarehouseTask(
             catch (Exception e)
             {
                 logger.LogError("发生错误：{e}", e);
-                
+
                 await dbContext.Warehouses.Where(x => x.Id == value.Id)
-                    .ExecuteUpdateAsync(x => x.SetProperty(a => a.Status, WarehouseStatus.Failed), stoppingToken);
-                
+                    .ExecuteUpdateAsync(x => x.SetProperty(a => a.Status, WarehouseStatus.Failed)
+                        .SetProperty(x => x.Error, e.ToString()), stoppingToken);
+
                 // 删除其他的
                 await dbContext.Documents.Where(x => x.WarehouseId == value.Id)
                     .ExecuteDeleteAsync(cancellationToken: stoppingToken);
