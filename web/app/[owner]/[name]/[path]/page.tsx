@@ -1,8 +1,7 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
-import { Row, Col, ConfigProvider, theme } from 'antd';
+import { Row, Col,  theme } from 'antd';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import 'katex/dist/katex.min.css';
 
 // 导入封装好的组件

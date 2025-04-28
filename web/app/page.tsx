@@ -1,27 +1,37 @@
-'use client';
+'use client'
 import { useState, useEffect } from 'react';
 import { Button, Typography, Layout, Space, Input, Empty, Card, Row, Col, Statistic, Tooltip, Avatar, message, Pagination } from 'antd';
 import { 
   PlusOutlined, 
-  SearchOutlined, 
   DatabaseOutlined, 
   ApiOutlined,
   GithubOutlined,
-  CodeOutlined,
-  RobotOutlined,
   FileTextOutlined,
-  ArrowRightOutlined,
   HistoryOutlined
 } from '@ant-design/icons';
 import RepositoryForm from './components/RepositoryForm';
 import RepositoryList from './components/RepositoryList';
 import LastRepoModal from './components/LastRepoModal';
 import { Repository, RepositoryFormValues } from './types';
-import { getWarehouse, submitWarehouse, WarehouseListResponse } from './services/warehouseService';
+import { getWarehouse, submitWarehouse } from './services/warehouseService';
+import { unstableSetRender } from 'antd';
+import { createRoot } from 'react-dom/client';
 
 const { Content, Header } = Layout;
 const { Title,  Paragraph } = Typography;
 const { Search } = Input;
+
+unstableSetRender((node, container) => {
+  // @ts-ignore
+  container._reactRoot ||= createRoot(container);
+  // @ts-ignore
+  const root = container._reactRoot;
+  root.render(node);
+  return async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    root.unmount();
+  };
+});
 
 export default function Home() {
   const [repositories, setRepositories] = useState<Repository[]>([]);
@@ -127,16 +137,18 @@ export default function Home() {
         </div>
       </Header>
 
-      <Content style={{ padding: '24px' }}>
+      <Content style={{ padding: '24px', background: 'var(--ant-color-bg-layout, #f0f2f5)' }}>
         <div className="page-container">
           <Row gutter={[24, 24]}>
             <Col span={24}>
-              <Card  style={{ borderRadius: 12, marginBottom: 24 }}>
+              <Card  style={{ borderRadius: 12, marginBottom: 24, background: 'var(--ant-color-bg-container)' }}>
                 <Row gutter={24} align="middle">
                   <Col xs={24} md={16}>
                     <div style={{ paddingRight: 24 }}>
-                      <Title level={2} className="welcome-title">AI驱动的代码知识库</Title>
-                      <Paragraph style={{ fontSize: 16, marginBottom: 24 }}>
+                      <Title level={2} className="welcome-title" style={{ fontSize: '2.2rem', fontWeight: 700, marginBottom: 8 }}>
+                        AI驱动的代码知识库
+                      </Title>
+                      <Paragraph type="secondary" style={{ fontSize: 16, marginBottom: 24, color: 'var(--ant-color-text-secondary)' }}>
                         Koala Wiki 使用先进的AI技术分析您的代码仓库，生成详细的文档和见解，帮助您更深入地理解代码结构和工作原理。
                       </Paragraph>
                       <Button 
@@ -154,23 +166,23 @@ export default function Home() {
                     <Row gutter={[16, 16]}>
                       <Col span={8}>
                         <Statistic 
-                          title="仓库总数" 
+                          title={<Typography.Text type="secondary">仓库总数</Typography.Text>} 
                           value={stats.totalRepositories} 
-                          prefix={<DatabaseOutlined />} 
+                          prefix={<DatabaseOutlined style={{ color: 'var(--ant-color-primary)' }} />} 
                         />
                       </Col>
                       <Col span={8}>
                         <Statistic 
-                          title="Git仓库" 
+                          title={<Typography.Text type="secondary">Git仓库</Typography.Text>} 
                           value={stats.gitRepos} 
-                          prefix={<GithubOutlined />} 
+                          prefix={<GithubOutlined style={{ color: 'var(--ant-color-primary)' }} />} 
                         />
                       </Col>
                       <Col span={8}>
                         <Statistic 
-                          title="最后更新" 
+                          title={<Typography.Text type="secondary">最后更新</Typography.Text>} 
                           value={stats.lastUpdated} 
-                          prefix={<FileTextOutlined />} 
+                          prefix={<FileTextOutlined style={{ color: 'var(--ant-color-primary)' }} />} 
                         />
                       </Col>
                     </Row>
@@ -181,7 +193,7 @@ export default function Home() {
           </Row>
 
           <div className="page-header">
-            <Title level={3}>仓库列表</Title>
+            <Title level={3} style={{ margin: 0 }}>仓库列表</Title>
             <Space>
               <Search
                 placeholder="搜索仓库名称或地址"
@@ -206,12 +218,12 @@ export default function Home() {
             <Row gutter={[16, 16]} className="repository-grid">
               {[1, 2, 3, 4].map(i => (
                 <Col xs={24} sm={12} md={8} lg={6} key={i}>
-                  <Card loading className="repository-card" />
+                  <Card loading className="repository-card" style={{ background: 'var(--ant-color-bg-container)' }} />
                 </Col>
               ))}
             </Row>
           ) : filteredRepositories.length === 0 ? (
-            <div className="empty-container">
+            <div className="empty-container" style={{ background: 'var(--ant-color-bg-container)' }}>
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                 description={

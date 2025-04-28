@@ -55,12 +55,14 @@ const RepositoryForm: React.FC<RepositoryFormProps> = ({
       setLoading(true);
       
       // Call the API service
-      const response = await submitWarehouse(values);
+      const response = await submitWarehouse(values) as any;
       
-      if (response.success) {
+      if (response.data.code == 200) {
         message.success('仓库添加成功');
         onSubmit(values);
         form.resetFields();
+      }else{
+        message.error(response.data.message)
       }
     } catch (error) {
       // Form validation errors are handled automatically

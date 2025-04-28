@@ -4,6 +4,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -39,6 +40,9 @@
     <ItemGroup>
       <Content Update="plugins\CodeAnalysis\AnalyzeCatalogue\config.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Include="..\..\.dockerignore">
+        <Link>.dockerignore</Link>
       </Content>
     </ItemGroup>
 

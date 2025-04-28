@@ -3,12 +3,14 @@ using Serilog;
 
 namespace KoalaWiki;
 
-public class KoalaHttpClientHandler : HttpClientHandler
+public sealed class KoalaHttpClientHandler : HttpClientHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
+        Log.Logger.Information("HTTP {Method} {Uri}", request.Method, request.RequestUri);
+
         // 1. 启动计时
         var stopwatch = Stopwatch.StartNew();
         // 2. 发送请求

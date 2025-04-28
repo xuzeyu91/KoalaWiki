@@ -22,15 +22,16 @@ export interface WarehouseListResponse {
   items: Repository[];
 }
 
-const API_URL = 'http://localhost:5085/api';
 
 /**
  * Submit a new repository to the warehouse
+ * 这个函数仍然需要在客户端使用
  */
 export async function submitWarehouse(
   data: RepositoryFormValues
 ): Promise<ApiResponse<Repository>> {
-  return fetchApi<Repository>(API_URL + '/Warehouse/SubmitWarehouse', {
+  // @ts-ignore
+  return fetchApi<Repository>(window.API_URL + '/Warehouse/SubmitWarehouse', {
     method: 'POST',
     body: JSON.stringify(data),
   });
@@ -38,37 +39,66 @@ export async function submitWarehouse(
 
 /**
  * Get warehouse list
+ * 此函数可在服务器组件中使用
  */
 export async function getWarehouse(page: number, pageSize: number): Promise<ApiResponse<WarehouseListResponse>> {
-  return fetchApi<WarehouseListResponse>(API_URL + '/Warehouse/WarehouseList?page=' + page + '&pageSize=' + pageSize, {
+  // @ts-ignore
+  return fetchApi<WarehouseListResponse>(window.API_URL + '/Warehouse/WarehouseList?page=' + page + '&pageSize=' + pageSize, {
     method: 'GET',
+    // 添加缓存控制使其适用于服务器组件
+    cache: 'no-store'
   });
 }
 
+/**
+ * 获取文档目录
+ * 此函数可在服务器组件中使用
+ */
 export async function documentCatalog(organizationName:string,name:string):Promise<any>{
-  return fetchApi<any>(API_URL + '/DocumentCatalog/DocumentCatalogs?organizationName=' + organizationName + '&name=' + name, {
+  // @ts-ignore
+  return fetchApi<any>(window.API_URL + '/DocumentCatalog/DocumentCatalogs?organizationName=' + organizationName + '&name=' + name, {
     method: 'GET',
+    // 添加缓存控制使其适用于服务器组件
+    cache: 'no-store'
   });
 }
 
+/**
+ * 根据ID获取文档
+ * 此函数可在服务器组件中使用
+ */
 export async function documentById(owner:string, name:string, path:string):Promise<any>{
-  return fetchApi<any>(API_URL + '/DocumentCatalog/DocumentById?owner=' + owner + '&name=' + name + '&path=' + path, {
+  // @ts-ignore
+  return fetchApi<any>(window.API_URL + '/DocumentCatalog/DocumentById?owner=' + owner + '&name=' + name + '&path=' + path, {
     method: 'GET',
+    // 添加缓存控制使其适用于服务器组件
+    cache: 'no-store'
   });
 }
 
-// /api/Warehouse/WarehouseOverview
-export async function  getWarehouseOverview(owner:string, name:string){
-  return fetchApi<any>(API_URL + '/Warehouse/WarehouseOverview?owner=' + owner + '&name=' + name , {
+/**
+ * 获取仓库概览信息
+ * 此函数可在服务器组件中使用
+ */
+export async function getWarehouseOverview(owner:string, name:string){
+  // @ts-ignore
+  return fetchApi<any>(window.API_URL + '/Warehouse/WarehouseOverview?owner=' + owner + '&name=' + name, {
     method: 'GET',
+    // 添加缓存控制使其适用于服务器组件
+    cache: 'no-store'
   });
 }
 
-///api/Warehouse/LastWarehouse
-
-export async function  getLastWarehouse(address:string){
-  return fetchApi<any>(API_URL + '/Warehouse/LastWarehouse?address=' + address , {
+/**
+ * 获取最近的仓库信息
+ * 此函数可在服务器组件中使用
+ */
+export async function getLastWarehouse(address:string){
+  // @ts-ignore
+  return fetchApi<any>(window.API_URL + '/Warehouse/LastWarehouse?address=' + address, {
     method: 'GET',
+    // 添加缓存控制使其适用于服务器组件
+    cache: 'no-store'
   });
 }
 

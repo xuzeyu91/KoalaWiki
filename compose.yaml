@@ -1,0 +1,20 @@
+﻿services:
+  koalawiki:
+    image: crpi-j9ha7sxwhatgtvj4.cn-shenzhen.personal.cr.aliyuncs.com/koala-ai/koala-wiki
+    ports:
+      - 8080:8080
+    volumes:
+      - ./repositories:/repositories
+      - ./data:/data
+    build:
+      context: .
+      dockerfile: src/KoalaWiki/Dockerfile
+      
+  koalawiki-web:
+    image: crpi-j9ha7sxwhatgtvj4.cn-shenzhen.personal.cr.aliyuncs.com/koala-ai/koala-wiki-web
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+

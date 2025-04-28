@@ -1,11 +1,10 @@
 'use client';
-import { Layout, Typography, Spin } from 'antd';
-import { BookOutlined, FileOutlined, HomeFilled, FolderOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Layout, Typography, Spin, Space, theme, ConfigProvider, Flex } from 'antd';
+import { FolderOutlined, FileTextOutlined, GithubOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { documentCatalog } from '../../services/warehouseService';
-
 const { Header, Content, Sider } = Layout;
 const { Title, Text } = Typography;
 
@@ -20,17 +19,17 @@ interface DocumentCatalogResponse {
 
 // 递归生成菜单项
 const generateMenuItems = (
-  data: DocumentCatalogResponse, 
-  parentKey: string = '', 
-  owner: string, 
+  data: DocumentCatalogResponse,
+  parentKey: string = '',
+  owner: string,
   name: string
 ) => {
   const key = parentKey ? `${parentKey}-${data.key}` : data.key;
   const item = {
     key,
     icon: data.children?.length ? <FolderOutlined /> : <FileTextOutlined />,
-    label: data.children?.length 
-      ? data.label 
+    label: data.children?.length
+      ? data.label
       : <Link href={`/${owner}/${name}/${data.url}`}>{data.label}</Link>,
   };
 
@@ -54,12 +53,13 @@ export default function RepositoryLayout({
   params: { owner: string; name: string };
 }) {
   const pathname = usePathname();
-  
+  const { token } = theme.useToken();
+
   // 从路由路径解析 owner 和 name
   const pathParts = pathname.split('/').filter(Boolean);
   const owner = pathParts[0] || '';
   const name = pathParts[1] || '';
-  
+
   const [docItems, setDocItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState('');
@@ -69,7 +69,7 @@ export default function RepositoryLayout({
 
   useEffect(() => {
     if (!owner || !name) return;
-    
+
     const fetchDocumentCatalog = async () => {
       setLoading(true);
       try {
@@ -92,15 +92,15 @@ export default function RepositoryLayout({
     const style = {
       padding: '8px 24px',
       paddingLeft: `${24 + level * 16}px`,
-      color: isActive ? 'rgba(255, 255, 255, 0.85)' : 'rgba(255, 255, 255, 0.65)',
+      color: isActive ? token.colorBgSpotlight : token.colorTextSecondary,
       cursor: 'pointer',
-      backgroundColor: isActive ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+      backgroundColor: isActive ? token.colorBgTextHover : 'transparent',
       transition: 'all 0.3s',
       display: 'block',
       textDecoration: 'none',
       fontWeight: isActive ? 500 : 400,
       margin: '4px 0',
-      borderRadius: '4px',
+      borderRadius: token.borderRadiusSM,
     };
 
     return (
@@ -110,12 +110,12 @@ export default function RepositoryLayout({
             <div style={style}>
               {item.label}
             </div>
-            {item.children.sort((a, b) => a.order - b.order).map(child => 
+            {item.children.sort((a, b) => a.order - b.order).map(child =>
               renderSidebarItem(child, level + 1)
             )}
           </>
         ) : (
-          <Link 
+          <Link
             href={`/${owner}/${name}/${item.url}`}
             style={style}
           >
@@ -127,75 +127,115 @@ export default function RepositoryLayout({
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        padding: '0 24px', 
-        background: '#222',
-        position: 'fixed',
-        width: '100%',
-        zIndex: 1000 
-      }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
-          <HomeFilled style={{ fontSize: 24, color: 'white', marginRight: 16 }} />
-          <Title level={4} style={{ color: 'white', margin: 0 }}>Koala Wiki</Title>
-        </Link>
-      </Header>
-      <Layout style={{ marginTop: 64 }}>
-        <Sider 
-          width={260} 
-          style={{ 
-            background: '#101010', 
-            overflow: 'auto',
-            height: 'calc(100vh - 64px)',
-            position: 'fixed',
-            left: 0,
-            top: 64,
-            bottom: 0,
-          }}
-        >
-          <div style={{ padding: '16px 0' }}>
-            <Text style={{ padding: '0 24px', color: 'rgba(255, 255, 255, 0.45)', display: 'block', fontSize: 12 }}>
-              Last updated: {lastUpdated}
-            </Text>
-            
-            <div style={{ marginTop: 16 }}>
-              <Link 
-                href={`/${owner}/${name}`}
-                style={{ 
-                  padding: '8px 24px', 
-                  color: pathname === `/${owner}/${name}` ? 'rgba(255, 255, 255, 0.85)' : 'rgba(255, 255, 255, 0.65)', 
-                  backgroundColor: pathname === `/${owner}/${name}` ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
-                  fontWeight: pathname === `/${owner}/${name}` ? 500 : 400,
+    <ConfigProvider
+      theme={{
+        components: {
+          Layout: {
+            headerBg: token.colorBgElevated,
+            siderBg: token.colorBgContainer,
+          },
+        },
+      }}
+    >
+      <Layout style={{ minHeight: '100vh' }}>
+        <Header style={{
+          padding: 0,
+          background: token.colorBgContainer,
+          position: 'fixed',
+          width: '100%',
+          zIndex: 1000,
+          borderBottom: `1px solid ${token.colorBorderSecondary}`,
+          boxShadow: token.boxShadow
+        }}>
+          <Flex align="center" style={{ height: '100%', padding: `0 ${token.paddingLG}px` }}>
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <Space size={token.sizeMD}>
+                <GithubOutlined style={{ fontSize: token.fontSizeHeading4, color: token.colorPrimary }} />
+                <Title
+                  level={4}
+                  style={{
+                    margin: 0,
+                    color: token.colorText,
+                    fontSize: token.fontSizeHeading4,
+                    lineHeight: 1.2,
+                    letterSpacing: '0.5px',
+                    fontWeight: token.fontWeightStrong
+                  }}
+                >
+                  <span style={{ fontSize: token.fontSizeHeading4, color: token.colorPrimary }}>
+                    {owner}
+                    /
+                    {name}
+                  </span>
+                </Title>
+              </Space>
+            </span>
+          </Flex>
+        </Header>
+        <Layout style={{ marginTop: 64 }}>
+          <Sider
+            width={260}
+            style={{
+              background: token.colorBgElevated,
+              overflow: 'auto',
+              height: 'calc(100vh - 64px)',
+              position: 'fixed',
+              left: 0,
+              top: 64,
+              bottom: 0,
+              borderRight: `1px solid ${token.colorBorderSecondary}`,
+            }}
+          >
+            <div style={{ padding: `${token.paddingMD}px 0` }}>
+              <Text
+                type="secondary"
+                style={{
+                  padding: `0 ${token.paddingLG}px`,
                   display: 'block',
-                  textDecoration: 'none',
-                  margin: '4px 0',
-                  borderRadius: '4px',
+                  fontSize: token.fontSizeSM,
+                  opacity: 0.8
                 }}
               >
-                Overview
-              </Link>
-              
-              {loading ? (
-                <div style={{ padding: '20px', textAlign: 'center' }}>
-                  <Spin size="small" />
-                </div>
-              ) : (
-                docItems.map(item => renderSidebarItem(item))
-              )}
+                Last updated: {lastUpdated}
+              </Text>
+
+              <div style={{ marginTop: token.marginMD }}>
+                <Link
+                  href={`/${owner}/${name}`}
+                  style={{
+                    padding: `${token.paddingXS}px ${token.paddingLG}px`,
+                    color: pathname === `/${owner}/${name}` ? token.colorBgSpotlight : token.colorTextSecondary,
+                    backgroundColor: pathname === `/${owner}/${name}` ? token.colorBgTextHover : 'transparent',
+                    fontWeight: pathname === `/${owner}/${name}` ? token.fontWeightStrong : 400,
+                    display: 'block',
+                    textDecoration: 'none',
+                    margin: `${token.marginXS}px 0`,
+                    borderRadius: token.borderRadiusSM,
+                  }}
+                >
+                  Overview
+                </Link>
+
+                {loading ? (
+                  <div style={{ padding: token.paddingLG, textAlign: 'center' }}>
+                    <Spin size="small" />
+                  </div>
+                ) : (
+                  docItems.map(item => renderSidebarItem(item))
+                )}
+              </div>
             </div>
-          </div>
-        </Sider>
-        <Content style={{ 
-          marginLeft: 260, 
-          padding: '24px', 
-          background: '#f5f5f5', 
-          minHeight: 'calc(100vh - 64px)'
-        }}>
-          {children}
-        </Content>
+          </Sider>
+          <Content style={{
+            marginLeft: 260,
+            padding: token.paddingLG,
+            background: token.colorBgLayout,
+            minHeight: 'calc(100vh - 64px)'
+          }}>
+            {children}
+          </Content>
+        </Layout>
       </Layout>
-    </Layout>
+    </ConfigProvider>
   );
 } 

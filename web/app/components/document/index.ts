@@ -5,6 +5,9 @@ export { default as MobileDocumentDrawer } from './MobileDocumentDrawer';
 export { default as LoadingErrorState } from './LoadingErrorState';
 export { default as DocumentStyles } from './DocumentStyles';
 
+// 导出服务器组件
+export * from './ServerComponents';
+
 // 工具函数导出
 export * from './utils/headingUtils';
 export * from './utils/mermaidUtils'; 

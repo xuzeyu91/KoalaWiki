@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Serilog;
 
 namespace KoalaWiki.KoalaWarehouse;
 
@@ -25,9 +26,10 @@ public class DocumentsService
         var kernel = KernelFactory.GetKernel(warehouse.OpenAIEndpoint,
             warehouse.OpenAIKey,
             warehouse.Model);
-
-
         var plugin = kernel.Plugins["CodeAnalysis"]["AnalyzeCatalogue"];
+
+        var fileKernel = KernelFactory.GetKernel(warehouse.OpenAIEndpoint,
+            warehouse.OpenAIKey, warehouse.Model, false);
 
         OpenAIPromptExecutionSettings settings = new()
         {
@@ -44,8 +46,7 @@ public class DocumentsService
         }
 
 
-        var overview = await GenerateProjectOverview(KernelFactory.GetKernel(warehouse.OpenAIEndpoint,
-            warehouse.OpenAIKey, warehouse.Model, false), catalogue.ToString(), path);
+        var overview = await GenerateProjectOverview(fileKernel, catalogue.ToString(), path);
 
         await dbContext.DocumentOverviews.Where(x => x.DocumentId == document.Id)
             .ExecuteDeleteAsync();
@@ -61,7 +62,7 @@ public class DocumentsService
 
         var str = new StringBuilder();
 
-        await foreach (var item in kernel.InvokeStreamingAsync(plugin, new KernelArguments(settings)
+        await foreach (var item in fileKernel.InvokeStreamingAsync(plugin, new KernelArguments(settings)
                        {
                            ["catalogue"] = catalogue.ToString(),
                            ["readme"] = await ReadMeFile(path)
@@ -76,17 +77,57 @@ public class DocumentsService
         // 递归处理目录层次结构
         ProcessCatalogueItems(result.Items, null, warehouse, document, documents);
 
-        documents.ForEach(x => x.Id = Guid.NewGuid().ToString("N"));
+        var documentFileItems = new System.Collections.Concurrent.ConcurrentBag<DocumentFileItem>();
 
-        var documentFileItems = new List<DocumentFileItem>();
+        // 提供4个的锁
+        var semaphore = new SemaphoreSlim(10);
+
+        var tasks = new List<Task>();
 
         // 开始根据目录结构创建文档
         foreach (var item in documents)
         {
-            var file = await ProcessCatalogueItems(item, kernel, catalogue.ToString(), await ReadMeFile(path));
+            tasks.Add(Task.Run(async () =>
+            {
+                int retryCount = 0;
+                const int maxRetries = 3;
+                bool success = false;
 
-            documentFileItems.Add(file);
+                while (!success && retryCount < maxRetries)
+                {
+                    try
+                    {
+                        Log.Logger.Information("处理仓库；{path} ,处理标题：{name}", path, item.Name);
+                        await semaphore.WaitAsync();
+                        var fileItem = await ProcessCatalogueItems(item, fileKernel, catalogue.ToString(), path);
+                        documentFileItems.Add(fileItem);
+                        success = true;
+                        
+                        Log.Logger.Information("处理仓库；{path} ,处理标题：{name} 完成！", path, item.Name);
+                    }
+                    catch (Exception ex)
+                    {
+                        retryCount++;
+                        if (retryCount >= maxRetries)
+                        {
+                            Console.WriteLine($"处理 {item.Name} 失败，已重试 {retryCount} 次，错误：{ex.Message}");
+                        }
+                        else
+                        {
+                            // 等待一段时间后重试
+                            await Task.Delay(1000 * retryCount);
+                        }
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }
+            }));
         }
+
+        // 等待所有任务完成
+        await Task.WhenAll(tasks);
 
         // 将解析的目录结构保存到数据库
         await dbContext.DocumentCatalogs.AddRangeAsync(documents);

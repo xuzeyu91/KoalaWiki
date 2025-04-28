@@ -1,6 +1,6 @@
-﻿namespace KoalaWiki;
+﻿namespace KoalaWiki.KoalaWarehouse;
 
-public class Prompt
+public static class Prompt
 {
     public const string DefaultPrompt = 
         """

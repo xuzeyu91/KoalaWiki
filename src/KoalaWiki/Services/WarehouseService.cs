@@ -48,40 +48,64 @@ public class WarehouseService(KoalaDbAccess access, IMapper mapper, WarehouseSto
     /// <summary>
     /// 提交仓库
     /// </summary>
-    public async Task SubmitWarehouseAsync(WarehouseInput input)
+    public async Task SubmitWarehouseAsync(WarehouseInput input,HttpContext context)
     {
-        // 判断是否.git结束，如果不是需要添加
-        if (!input.Address.EndsWith(".git"))
+        try
         {
-            input.Address += ".git";
+            if (!input.Address.EndsWith(".git"))
+            {
+                input.Address += ".git";
+            }
+            // 判断这个仓库是否已经添加
+            if (await access.Warehouses.AnyAsync(x =>
+                    x.Address == input.Address &&
+                    (x.Status != WarehouseStatus.Completed || x.Status != WarehouseStatus.Pending)))
+            {
+                throw new Exception("存在相同名称的渠道");
+            }
+        
+            // 校验仓库地址是否正确
+            try
+            {
+                using var repo = new Repository(input.Address);
+                if (!repo.Network.Remotes.Any())
+                {
+                    throw new Exception("仓库地址不正确");
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("仓库地址不正确", e);
+            }
+
+            // 删除旧的仓库
+            var oldWarehouse = await access.Warehouses
+                .Where(x => x.Address == input.Address)
+                .ExecuteDeleteAsync();
+
+            var entity = mapper.Map<Warehouse>(input);
+            entity.Name = string.Empty;
+            entity.Description = string.Empty;
+            entity.Version = string.Empty;
+            entity.Prompt = string.Empty;
+            entity.Branch = string.Empty;
+            entity.Type = "git";
+
+            entity.Id = Guid.NewGuid().ToString();
+            await access.Warehouses.AddAsync(entity);
+
+            await access.SaveChangesAsync();
+
+            await warehouseStore.WriteAsync(entity);
         }
-        // 判断这个仓库是否已经添加
-        if (await access.Warehouses.AnyAsync(x =>
-                x.Address == input.Address &&
-                (x.Status != WarehouseStatus.Completed || x.Status != WarehouseStatus.Pending)))
+        catch (Exception e)
         {
-            throw new Exception("存在相同名称的渠道");
+            await context.Response.WriteAsJsonAsync(new
+            {
+                code = 500,
+                message = e.Message
+            });
         }
-
-        // 删除旧的仓库
-        var oldWarehouse = await access.Warehouses
-            .Where(x => x.Address == input.Address)
-            .ExecuteDeleteAsync();
-
-        var entity = mapper.Map<Warehouse>(input);
-        entity.Name = string.Empty;
-        entity.Description = string.Empty;
-        entity.Version = string.Empty;
-        entity.Prompt = string.Empty;
-        entity.Branch = string.Empty;
-        entity.Type = "git";
-
-        entity.Id = Guid.NewGuid().ToString();
-        await access.Warehouses.AddAsync(entity);
-
-        await access.SaveChangesAsync();
-
-        await warehouseStore.WriteAsync(entity);
     }
 
     /// <summary>
