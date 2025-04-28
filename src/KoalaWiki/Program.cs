@@ -8,12 +8,12 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var logger = new Serilog.LoggerConfiguration()
-    .MinimumLevel.Debug()
+Log.Logger = new Serilog.LoggerConfiguration()
+    .MinimumLevel.Information()
     .WriteTo.Console()
     .CreateLogger();
 
-builder.Services.AddSerilog(logger);
+builder.Services.AddSerilog(Log.Logger);
 
 builder.Services.AddOpenApi();
 builder.Services.WithFast();

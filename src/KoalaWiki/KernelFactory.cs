@@ -20,7 +20,7 @@ public class KernelFactory
         kernelBuilder.Services.AddSerilog(Log.Logger);
 
         kernelBuilder.AddOpenAIChatCompletion(model, new Uri(chatEndpoint), chatApiKey, "Koala-Wiki",
-            httpClient: new HttpClient(new HttpClientHandler()
+            httpClient: new HttpClient(new KoalaHttpClientHandler()
             {
                 //添加重试试
                 AllowAutoRedirect = true,
