@@ -1,4 +1,4 @@
-﻿using KoalaWiki.DbAccess;
+﻿using KoalaWiki.Core.DataAccess;
 using KoalaWiki.Entities;
 using KoalaWiki.Git;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +19,7 @@ public class WarehouseTask(
 
         await using (var scope = service.CreateAsyncScope())
         {
-            var dbContext = scope.ServiceProvider.GetService<KoalaDbAccess>();
+            var dbContext = scope.ServiceProvider.GetService<IKoalaWikiContext>();
 
             var warehouses = await dbContext!.Warehouses
                 .Where(x => x.Status == WarehouseStatus.Pending)
@@ -36,20 +36,23 @@ public class WarehouseTask(
             var value = await warehouseStore.ReadAsync(stoppingToken);
             var scope = service.CreateAsyncScope();
 
-            var dbContext = scope.ServiceProvider.GetService<KoalaDbAccess>();
+            var dbContext = scope.ServiceProvider.GetService<IKoalaWikiContext>();
 
             try
             {
                 // 先拉取仓库
-                var (localPath, name, organization) = gitService.PullRepository(value.Address);
+                var info = gitService.PullRepository(value.Address, value?.GitUserName ?? string.Empty,
+                    value?.GitPassword ?? string.Empty, value?.Email ?? string.Empty);
 
                 await dbContext!.Warehouses.Where(x => x.Id == value.Id)
-                    .ExecuteUpdateAsync(x => x.SetProperty(a => a.Name, name)
-                        .SetProperty(x => x.OrganizationName, organization), stoppingToken);
+                    .ExecuteUpdateAsync(x => x.SetProperty(a => a.Name, info.RepositoryName)
+                        .SetProperty(x => x.Branch, info.BranchName)
+                        .SetProperty(x => x.Version, info.Version)
+                        .SetProperty(x => x.OrganizationName, info.Organization), stoppingToken);
 
                 var document = new Document()
                 {
-                    GitPath = localPath,
+                    GitPath = info.LocalPath,
                     WarehouseId = value.Id,
                     Status = WarehouseStatus.Pending,
                     Description = value.Description,
@@ -63,11 +66,12 @@ public class WarehouseTask(
 
                 await dbContext.SaveChangesAsync(stoppingToken);
 
-                await documentsService.HandleAsync(document, value, dbContext);
+                await documentsService.HandleAsync(document, value, dbContext, value.Address);
 
                 // 更新仓库状态
                 await dbContext.Warehouses.Where(x => x.Id == value.Id)
-                    .ExecuteUpdateAsync(x => x.SetProperty(a => a.Status, WarehouseStatus.Completed), stoppingToken);
+                    .ExecuteUpdateAsync(x => x.SetProperty(a => a.Status, WarehouseStatus.Completed)
+                        .SetProperty(x => x.Error, string.Empty), stoppingToken);
 
                 // 提交更改
                 await dbContext.Documents.Where(x => x.Id == document.Id)

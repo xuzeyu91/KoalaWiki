@@ -1,12 +1,12 @@
 ﻿using FastService;
-using KoalaWiki.DbAccess;
+using KoalaWiki.Core.DataAccess;
 using KoalaWiki.Entities;
 using LibGit2Sharp;
 using Microsoft.EntityFrameworkCore;
 
 namespace KoalaWiki.Services;
 
-public class DocumentCatalogService(KoalaDbAccess dbAccess) : FastApi
+public class DocumentCatalogService(IKoalaWikiContext dbAccess) : FastApi
 {
     /// <summary>
     /// 获取目录列表
@@ -15,24 +15,57 @@ public class DocumentCatalogService(KoalaDbAccess dbAccess) : FastApi
     /// <param name="name"></param>
     /// <returns></returns>
     /// <exception cref="NotFoundException"></exception>
-    public async Task<List<object>> GetDocumentCatalogsAsync(string organizationName, string name)
+    public async Task<object> GetDocumentCatalogsAsync(string organizationName, string name)
     {
-        var query = await dbAccess.Warehouses
+        var warehouse = await dbAccess.Warehouses
             .AsNoTracking()
             .Where(x => x.Name == name && x.OrganizationName == organizationName)
             .FirstOrDefaultAsync();
 
         // 如果没有找到仓库，返回空列表
-        if (query == null)
+        if (warehouse == null)
         {
             throw new NotFoundException("仓库不存在");
         }
 
-        var document = await dbAccess.DocumentCatalogs
-            .Where(x => x.WarehouseId == query.Id)
+        var document = await dbAccess.Documents
+            .AsNoTracking()
+            .Where(x => x.WarehouseId == warehouse.Id)
+            .FirstOrDefaultAsync();
+
+        var documentCatalogs = await dbAccess.DocumentCatalogs
+            .Where(x => x.WarehouseId == warehouse.Id)
             .ToListAsync();
 
-        return BuildDocumentTree(document);
+        string lastUpdate;
+
+        // 如果最近更新时间是今天那么只需要显示小时
+        if (document?.LastUpdate != null)
+        {
+            var time = DateTime.Now - document.LastUpdate;
+            lastUpdate = time.Days == 0 ? $"{time.Hours}小时前" : $"{time.Days}天前";
+
+            // 如果超过7天，显示日期
+            if (time.Days > 7)
+            {
+                lastUpdate = document.LastUpdate.ToString("yyyy-MM-dd");
+            }
+        }
+        else
+        {
+            lastUpdate = "刚刚";
+        }
+
+        return new
+        {
+            items = BuildDocumentTree(documentCatalogs),
+            lastUpdate,
+            document?.Description,
+            git = warehouse.Address,
+            document?.LikeCount,
+            document?.Status,
+            document?.CommentCount,
+        };
     }
 
     /// <summary>
@@ -64,11 +97,18 @@ public class DocumentCatalogService(KoalaDbAccess dbAccess) : FastApi
             throw new NotFoundException("文件不存在");
         }
 
+        // 找到所有引用文件
+        var fileSource = await dbAccess.DocumentFileItemSources.Where(x => x.DocumentFileItemId == item.Id)
+            .ToListAsync();
+
         //md
         await httpContext.Response.WriteAsJsonAsync(new
         {
             content = item.Content,
             title = item.Title,
+            fileSource,
+            address = query?.Address.Replace(".git", string.Empty),
+            query?.Branch,
         });
     }
 

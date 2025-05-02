@@ -1,5 +1,5 @@
 ﻿using FastService;
-using KoalaWiki.DbAccess;
+using KoalaWiki.Core.DataAccess;
 using KoalaWiki.Dto;
 using KoalaWiki.Entities;
 using KoalaWiki.KoalaWarehouse;
@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KoalaWiki.Services;
 
-public class WarehouseService(KoalaDbAccess access, IMapper mapper, WarehouseStore warehouseStore) : FastApi
+public class WarehouseService(IKoalaWikiContext access, IMapper mapper, WarehouseStore warehouseStore) : FastApi
 {
     /// <summary>
     /// 查询上次提交的仓库
@@ -22,7 +22,7 @@ public class WarehouseService(KoalaDbAccess access, IMapper mapper, WarehouseSto
         {
             address += ".git";
         }
-        
+
         var query = await access.Warehouses
             .AsNoTracking()
             .Where(x => x.Address == address)
@@ -45,10 +45,30 @@ public class WarehouseService(KoalaDbAccess access, IMapper mapper, WarehouseSto
         };
     }
 
+    public async Task<DocumentCommitRecord?> GetChangeLogAsync(string owner, string name)
+    {
+        var warehouse = await access.Warehouses
+            .AsNoTracking()
+            .Where(x => x.Name == name && x.OrganizationName == owner)
+            .FirstOrDefaultAsync();
+
+        // 如果没有找到仓库，返回空列表
+        if (warehouse == null)
+        {
+            throw new NotFoundException("仓库不存在");
+        }
+
+        
+        var commit = await access.DocumentCommitRecords.FirstOrDefaultAsync(x => x.WarehouseId == warehouse.Id);
+
+
+        return commit;
+    }
+
     /// <summary>
     /// 提交仓库
     /// </summary>
-    public async Task SubmitWarehouseAsync(WarehouseInput input,HttpContext context)
+    public async Task SubmitWarehouseAsync(WarehouseInput input, HttpContext context)
     {
         try
         {
@@ -56,26 +76,13 @@ public class WarehouseService(KoalaDbAccess access, IMapper mapper, WarehouseSto
             {
                 input.Address += ".git";
             }
+
+            var value = await access.Warehouses.FirstOrDefaultAsync(x => x.Address == input.Address);
             // 判断这个仓库是否已经添加
-            if (await access.Warehouses.AnyAsync(x =>
-                    x.Address == input.Address &&
-                    (x.Status != WarehouseStatus.Completed || x.Status != WarehouseStatus.Pending)))
+            if (value?.Status is WarehouseStatus.Completed or WarehouseStatus.Pending or WarehouseStatus.Processing)
+
             {
                 throw new Exception("存在相同名称的渠道");
-            }
-        
-            // 校验仓库地址是否正确
-            try
-            {
-                using var repo = new Repository(input.Address);
-                if (!repo.Network.Remotes.Any())
-                {
-                    throw new Exception("仓库地址不正确");
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception("仓库地址不正确", e);
             }
 
             // 删除旧的仓库
@@ -87,9 +94,11 @@ public class WarehouseService(KoalaDbAccess access, IMapper mapper, WarehouseSto
             entity.Name = string.Empty;
             entity.Description = string.Empty;
             entity.Version = string.Empty;
+            entity.Error = string.Empty;
             entity.Prompt = string.Empty;
             entity.Branch = string.Empty;
             entity.Type = "git";
+            entity.CreatedAt = DateTime.UtcNow;
 
             entity.Id = Guid.NewGuid().ToString();
             await access.Warehouses.AddAsync(entity);
@@ -97,6 +106,12 @@ public class WarehouseService(KoalaDbAccess access, IMapper mapper, WarehouseSto
             await access.SaveChangesAsync();
 
             await warehouseStore.WriteAsync(entity);
+
+            await context.Response.WriteAsJsonAsync(new
+            {
+                code = 200,
+                message = "提交成功"
+            });
         }
         catch (Exception e)
         {
